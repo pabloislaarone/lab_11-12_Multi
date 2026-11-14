@@ -378,8 +378,10 @@ class _DestacadoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
+    return CupertinoButton(
+      padding: EdgeInsets.zero,
+      pressedOpacity: 0.7,
+      onPressed: onTap,
       child: Container(
         width: 150,
         padding: const EdgeInsets.all(10),

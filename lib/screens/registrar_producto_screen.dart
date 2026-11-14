@@ -476,8 +476,10 @@ class _RegistrarProductoScreenState extends State<RegistrarProductoScreen> {
       padding: const EdgeInsets.only(top: 20),
       child: Column(
         children: [
-          GestureDetector(
-            onTap: _opcionesFoto,
+          CupertinoButton(
+            padding: EdgeInsets.zero,
+            pressedOpacity: 0.7,
+            onPressed: _opcionesFoto,
             child: Stack(
               clipBehavior: Clip.none,
               children: [
@@ -568,11 +570,12 @@ class _BotonPaso extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
+    return CupertinoButton(
+      padding: EdgeInsets.zero,
+      onPressed: onTap,
       child: Container(
-        width: 32,
-        height: 32,
+        width: 34,
+        height: 34,
         decoration: BoxDecoration(
           color: AppColors.fill,
           borderRadius: BorderRadius.circular(9),
@@ -650,8 +653,9 @@ class _GaleriaSheetState extends State<_GaleriaSheet> {
                 separatorBuilder: (_, __) => const SizedBox(width: 8),
                 itemBuilder: (_, i) {
                   final activa = cats[i] == _filtro;
-                  return GestureDetector(
-                    onTap: () => setState(() => _filtro = cats[i]),
+                  return CupertinoButton(
+                    padding: EdgeInsets.zero,
+                    onPressed: () => setState(() => _filtro = cats[i]),
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 14),
                       alignment: Alignment.center,
@@ -684,9 +688,13 @@ class _GaleriaSheetState extends State<_GaleriaSheet> {
                 itemCount: fotos.length,
                 itemBuilder: (_, i) {
                   final foto = fotos[i];
-                  return GestureDetector(
-                    onTap: () => Navigator.pop(context, foto),
+                  return CupertinoButton(
+                    padding: EdgeInsets.zero,
+                    pressedOpacity: 0.7,
+                    onPressed: () => Navigator.pop(context, foto),
                     child: Container(
+                      width: double.infinity,
+                      height: double.infinity,
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
                         color: AppColors.card,

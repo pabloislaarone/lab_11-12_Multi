@@ -23,9 +23,11 @@ class ProductoTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
+    // CupertinoButton da el efecto de "presionado" de iOS
+    return CupertinoButton(
+      padding: EdgeInsets.zero,
+      pressedOpacity: 0.7,
+      onPressed: onTap,
       child: Container(
         padding: const EdgeInsets.fromLTRB(12, 12, 4, 12),
         decoration: BoxDecoration(
