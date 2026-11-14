@@ -86,7 +86,7 @@ class MenuScreen extends StatelessWidget {
                     children: [
                       _Saludo(fecha: fechaHoy()),
                       const SizedBox(height: 18),
-                      _Resumen(
+                      _ResumenInventario(
                         productos: productos.length,
                         unidades: AppData.totalUnidades,
                         valor: AppData.valorInventario,
@@ -292,13 +292,13 @@ class _Saludo extends StatelessWidget {
 }
 
 /// Tarjeta translúcida con el valor total del inventario
-class _Resumen extends StatelessWidget {
+class _ResumenInventario extends StatelessWidget {
   final int productos;
   final int unidades;
   final double valor;
   final int stockBajo;
 
-  const _Resumen({
+  const _ResumenInventario({
     required this.productos,
     required this.unidades,
     required this.valor,

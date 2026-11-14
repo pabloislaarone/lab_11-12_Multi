@@ -690,7 +690,8 @@ class _GaleriaSheetState extends State<_GaleriaSheet> {
                       padding: const EdgeInsets.symmetric(horizontal: 14),
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        color: activa ? AppColors.label : AppColors.card,
+                        gradient: activa ? AppColors.brandGradient : null,
+                        color: activa ? null : AppColors.card,
                         borderRadius: BorderRadius.circular(18),
                       ),
                       child: Text(
@@ -752,7 +753,10 @@ class _GaleriaSheetState extends State<_GaleriaSheet> {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
-                                fontSize: 12, fontWeight: FontWeight.w500),
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.label,
+                            ),
                           ),
                         ],
                       ),

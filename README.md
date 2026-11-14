@@ -52,6 +52,12 @@ docs/capturas/                        # Capturas de la app
 
 ## Capturas
 
-| 1. Login | 2. Menú | 3. Listar productos | 4. Registrar producto | 5. Perfil |
-|:---:|:---:|:---:|:---:|:---:|
-| <img src="docs/capturas/01-login.png" width="180"> | <img src="docs/capturas/02-menu.png" width="180"> | <img src="docs/capturas/03-listar.png" width="180"> | <img src="docs/capturas/04-registrar.png" width="180"> | <img src="docs/capturas/05-perfil.png" width="180"> |
+| 1. Login | 2. Menú | 3. Listar productos | 4. Registrar producto |
+|:---:|:---:|:---:|:---:|
+| <img src="docs/capturas/01-login.png" width="180"> | <img src="docs/capturas/02-menu.png" width="180"> | <img src="docs/capturas/03-listar.png" width="180"> | <img src="docs/capturas/04-registrar.png" width="180"> |
+| `CupertinoFormSection` · `CupertinoTextFormFieldRow` · `CupertinoSwitch` | `CupertinoSliverNavigationBar` · `CupertinoTabBar` · `CupertinoListSection` | `CupertinoSearchTextField` · `CupertinoSlidingSegmentedControl` · `CupertinoButton` | `CupertinoNavigationBar` · `CupertinoFormSection` · `CupertinoTextFormFieldRow` |
+
+| 5. Perfil | 6. Opciones de producto | 7. Elegir categoría | 8. Cerrar sesión |
+|:---:|:---:|:---:|:---:|
+| <img src="docs/capturas/05-perfil.png" width="180"> | <img src="docs/capturas/06-action-sheet.png" width="180"> | <img src="docs/capturas/07-picker.png" width="180"> | <img src="docs/capturas/08-alerta.png" width="180"> |
+| `CupertinoListSection` · `CupertinoListTile` · `CupertinoSwitch` | `CupertinoActionSheet` | `CupertinoPicker` | `CupertinoAlertDialog` |

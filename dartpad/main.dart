@@ -2542,7 +2542,7 @@ class MenuScreen extends StatelessWidget {
                     children: [
                       _Saludo(fecha: fechaHoy()),
                       const SizedBox(height: 18),
-                      _Resumen(
+                      _ResumenInventario(
                         productos: productos.length,
                         unidades: AppData.totalUnidades,
                         valor: AppData.valorInventario,
@@ -2748,13 +2748,13 @@ class _Saludo extends StatelessWidget {
 }
 
 /// Tarjeta translúcida con el valor total del inventario
-class _Resumen extends StatelessWidget {
+class _ResumenInventario extends StatelessWidget {
   final int productos;
   final int unidades;
   final double valor;
   final int stockBajo;
 
-  const _Resumen({
+  const _ResumenInventario({
     required this.productos,
     required this.unidades,
     required this.valor,
@@ -4045,7 +4045,8 @@ class _GaleriaSheetState extends State<_GaleriaSheet> {
                       padding: const EdgeInsets.symmetric(horizontal: 14),
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        color: activa ? AppColors.label : AppColors.card,
+                        gradient: activa ? AppColors.brandGradient : null,
+                        color: activa ? null : AppColors.card,
                         borderRadius: BorderRadius.circular(18),
                       ),
                       child: Text(
@@ -4107,7 +4108,10 @@ class _GaleriaSheetState extends State<_GaleriaSheet> {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
-                                fontSize: 12, fontWeight: FontWeight.w500),
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.label,
+                            ),
                           ),
                         ],
                       ),
