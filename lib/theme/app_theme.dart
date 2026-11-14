@@ -86,33 +86,31 @@ class AppText {
   static const TextStyle largeTitle = TextStyle(
     fontSize: 32,
     fontWeight: FontWeight.w700,
-    letterSpacing: -0.6,
+    letterSpacing: -0.2,
     color: AppColors.label,
   );
 
   static const TextStyle title = TextStyle(
     fontSize: 22,
     fontWeight: FontWeight.w700,
-    letterSpacing: -0.4,
+    letterSpacing: -0.1,
     color: AppColors.label,
   );
 
   static const TextStyle headline = TextStyle(
     fontSize: 17,
     fontWeight: FontWeight.w600,
-    letterSpacing: -0.3,
+    letterSpacing: 0,
     color: AppColors.label,
   );
 
   static const TextStyle body = TextStyle(
     fontSize: 16,
-    letterSpacing: -0.2,
     color: AppColors.label,
   );
 
   static const TextStyle subhead = TextStyle(
     fontSize: 14,
-    letterSpacing: -0.1,
     color: AppColors.secondaryLabel,
   );
 
@@ -125,7 +123,7 @@ class AppText {
   static const TextStyle section = TextStyle(
     fontSize: 20,
     fontWeight: FontWeight.w700,
-    letterSpacing: -0.4,
+    letterSpacing: -0.1,
     color: AppColors.label,
   );
 }

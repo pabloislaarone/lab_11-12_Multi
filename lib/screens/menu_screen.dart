@@ -311,7 +311,7 @@ class _ResumenCard extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 32,
                 fontWeight: FontWeight.w700,
-                letterSpacing: -0.8,
+                letterSpacing: -0.3,
                 color: CupertinoColors.white,
               ),
             ),

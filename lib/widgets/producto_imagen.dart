@@ -44,7 +44,10 @@ class ProductoImagen extends StatelessWidget {
                   if (progreso == null) return child;
                   return const Center(child: CupertinoActivityIndicator());
                 },
-                errorBuilder: (_, __, ___) => _respaldo(color),
+                // Si la foto no carga, se muestra solo el ícono de la categoría
+                errorBuilder: (_, __, ___) => Center(
+                  child: Icon(iconoRespaldo, size: size * 0.42, color: color),
+                ),
               ),
             ),
     );

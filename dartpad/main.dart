@@ -3,7 +3,6 @@
 // Usuario de prueba: admin@techstore.com / 123456
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
 
 // ===== lib/main.dart =====
 // TechStore App · Laboratorio S11-12 (versión con widgets Cupertino)
@@ -117,33 +116,31 @@ class AppText {
   static const TextStyle largeTitle = TextStyle(
     fontSize: 32,
     fontWeight: FontWeight.w700,
-    letterSpacing: -0.6,
+    letterSpacing: -0.2,
     color: AppColors.label,
   );
 
   static const TextStyle title = TextStyle(
     fontSize: 22,
     fontWeight: FontWeight.w700,
-    letterSpacing: -0.4,
+    letterSpacing: -0.1,
     color: AppColors.label,
   );
 
   static const TextStyle headline = TextStyle(
     fontSize: 17,
     fontWeight: FontWeight.w600,
-    letterSpacing: -0.3,
+    letterSpacing: 0,
     color: AppColors.label,
   );
 
   static const TextStyle body = TextStyle(
     fontSize: 16,
-    letterSpacing: -0.2,
     color: AppColors.label,
   );
 
   static const TextStyle subhead = TextStyle(
     fontSize: 14,
-    letterSpacing: -0.1,
     color: AppColors.secondaryLabel,
   );
 
@@ -156,7 +153,7 @@ class AppText {
   static const TextStyle section = TextStyle(
     fontSize: 20,
     fontWeight: FontWeight.w700,
-    letterSpacing: -0.4,
+    letterSpacing: -0.1,
     color: AppColors.label,
   );
 }
@@ -857,7 +854,10 @@ class ProductoImagen extends StatelessWidget {
                   if (progreso == null) return child;
                   return const Center(child: CupertinoActivityIndicator());
                 },
-                errorBuilder: (_, __, ___) => _respaldo(color),
+                // Si la foto no carga, se muestra solo el ícono de la categoría
+                errorBuilder: (_, __, ___) => Center(
+                  child: Icon(iconoRespaldo, size: size * 0.42, color: color),
+                ),
               ),
             ),
     );
@@ -2414,7 +2414,7 @@ class _ResumenCard extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 32,
                 fontWeight: FontWeight.w700,
-                letterSpacing: -0.8,
+                letterSpacing: -0.3,
                 color: CupertinoColors.white,
               ),
             ),
