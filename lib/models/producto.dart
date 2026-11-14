@@ -1,5 +1,5 @@
 // Modelo: Producto
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 
 class Producto {
   final String id;
@@ -28,8 +28,7 @@ class Producto {
     required this.icono,
   });
 
-  // (No visto en clase) copyWith crea una copia del objeto
-  // cambiando solo algunos campos (útil para EDITAR sin mutar el original).
+  // copyWith crea una copia cambiando solo algunos campos (para EDITAR).
   Producto copyWith({
     String? nombre,
     String? marca,
@@ -54,9 +53,11 @@ class Producto {
   }
 
   /// Precio con formato peruano: "S/ 3,500.00"
-  String get precioFormateado {
-    final partes = precio.toStringAsFixed(2).split('.');
-    // (No visto en clase) expresión regular para poner comas de miles
+  String get precioFormateado => soles(precio);
+
+  /// Da formato de soles a cualquier monto (con comas de miles)
+  static String soles(double monto) {
+    final partes = monto.toStringAsFixed(2).split('.');
     final entero = partes[0].replaceAllMapped(
       RegExp(r'(\d)(?=(\d{3})+$)'),
       (m) => '${m[1]},',

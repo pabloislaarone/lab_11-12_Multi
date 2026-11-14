@@ -1,7 +1,7 @@
 name: techstore_app
-description: "Laboratorio Flutter - Sección B: Login, Menú, Listar, Registrar y Perfil."
+description: "Laboratorio S11-12: TechStore con widgets Cupertino (Login, Menú, Listar, Registrar y Perfil)."
 publish_to: 'none'
-version: 1.0.0+1
+version: 2.0.0+2
 
 environment:
   sdk: ^3.6.0
@@ -17,4 +17,4 @@ dev_dependencies:
   flutter_lints: ^5.0.0
 
 flutter:
-  uses-material-design: true
+  uses-material-design: false

@@ -1,131 +1,147 @@
-// Tema global: colores, degradados, sombras y estilos
-import 'package:flutter/material.dart';
+// Colores, estilos de texto y tema Cupertino de toda la app.
+// Se usa la paleta del sistema de iOS para que la app se sienta nativa.
+import 'package:flutter/cupertino.dart';
 
 class AppColors {
-  // Paleta principal (índigo + violeta + cian)
-  static const Color primary = Color(0xFF4F46E5);
-  static const Color primaryDark = Color(0xFF312E81);
-  static const Color violet = Color(0xFF7C3AED);
-  static const Color cyan = Color(0xFF06B6D4);
+  AppColors._();
 
-  static const Color background = Color(0xFFF4F6FB);
-  static const Color surface = Colors.white;
-  static const Color inputFill = Color(0xFFF1F4F9);
-  static const Color textDark = Color(0xFF0F172A);
-  static const Color textLight = Color(0xFF64748B);
-  static const Color border = Color(0xFFE2E8F0);
+  // Color de marca (índigo de iOS)
+  static const Color primary = Color(0xFF5856D6);
+  static const Color primaryDark = Color(0xFF3634A3);
 
-  static const Color danger = Color(0xFFEF4444);
-  static const Color success = Color(0xFF10B981);
-  static const Color warning = Color(0xFFF59E0B);
+  // Fondos estilo "Ajustes" de iOS
+  static const Color background = Color(0xFFF2F2F7); // systemGroupedBackground
+  static const Color card = Color(0xFFFFFFFF);
+  static const Color fill = Color(0xFFEFEFF4);
+  static const Color separator = Color(0xFFE5E5EA);
 
-  /// Degradado de los encabezados
-  static const LinearGradient headerGradient = LinearGradient(
-    colors: [primaryDark, primary, violet],
+  // Texto
+  static const Color label = Color(0xFF1C1C1E);
+  static const Color secondaryLabel = Color(0xFF6E6E73);
+  static const Color tertiaryLabel = Color(0xFFAEAEB2);
+
+  // Estados
+  static const Color success = Color(0xFF34C759);
+  static const Color warning = Color(0xFFFF9500);
+  static const Color danger = Color(0xFFFF3B30);
+  static const Color blue = Color(0xFF007AFF);
+  static const Color teal = Color(0xFF30B0C7);
+  static const Color pink = Color(0xFFFF2D55);
+  static const Color grey = Color(0xFF8E8E93);
+
+  /// Tarjeta oscura del resumen del inventario
+  static const LinearGradient heroGradient = LinearGradient(
+    colors: [Color(0xFF1C1C2E), Color(0xFF34336B)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
-  /// Degradado de los botones principales
-  static const LinearGradient buttonGradient = LinearGradient(
-    colors: [primary, violet],
-    begin: Alignment.centerLeft,
-    end: Alignment.centerRight,
+  /// Ícono de la app en el login
+  static const LinearGradient brandGradient = LinearGradient(
+    colors: [Color(0xFF7D7AFF), Color(0xFF5856D6)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
   );
 
-  // Degradados para las categorías de productos y accesos del menú
-  static const List<List<Color>> _paletas = [
-    [Color(0xFF6366F1), Color(0xFF8B5CF6)], // índigo
-    [Color(0xFF06B6D4), Color(0xFF3B82F6)], // cian -> azul
-    [Color(0xFFF59E0B), Color(0xFFF97316)], // ámbar
-    [Color(0xFF10B981), Color(0xFF059669)], // verde
-    [Color(0xFFEC4899), Color(0xFF8B5CF6)], // rosa -> violeta
-    [Color(0xFF0EA5E9), Color(0xFF6366F1)], // celeste -> índigo
-  ];
-
-  /// Devuelve siempre el mismo degradado para el mismo texto (categoría)
-  static LinearGradient gradientFor(String clave) {
-    final colores = _paletas[clave.hashCode.abs() % _paletas.length];
-    return LinearGradient(
-      colors: colores,
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-    );
+  /// Color de cada categoría (para íconos y etiquetas)
+  static Color categoria(String categoria) {
+    switch (categoria) {
+      case 'Laptops':
+        return primary;
+      case 'Celulares':
+        return blue;
+      case 'Tablets':
+        return teal;
+      case 'Audio':
+        return pink;
+      case 'Wearables':
+        return warning;
+      case 'Accesorios':
+        return success;
+      default:
+        return grey;
+    }
   }
 
-  static LinearGradient gradientIndex(int i) => LinearGradient(
-        colors: _paletas[i % _paletas.length],
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-      );
+  /// Color según el stock disponible
+  static Color stock(int unidades) {
+    if (unidades <= 5) return danger;
+    if (unidades <= 12) return warning;
+    return success;
+  }
 
-  /// Sombra suave usada en tarjetas
-  static List<BoxShadow> softShadow = [
-    BoxShadow(
-      color: const Color(0xFF1E1B4B).withValues(alpha: 0.08),
-      blurRadius: 24,
-      offset: const Offset(0, 10),
-    ),
-  ];
+  static List<BoxShadow> get softShadow => [
+        BoxShadow(
+          color: const Color(0xFF000000).withValues(alpha: 0.05),
+          blurRadius: 18,
+          offset: const Offset(0, 6),
+        ),
+      ];
+}
+
+/// Estilos de texto basados en la tipografía de iOS
+class AppText {
+  AppText._();
+
+  static const TextStyle largeTitle = TextStyle(
+    fontSize: 32,
+    fontWeight: FontWeight.w700,
+    letterSpacing: -0.6,
+    color: AppColors.label,
+  );
+
+  static const TextStyle title = TextStyle(
+    fontSize: 22,
+    fontWeight: FontWeight.w700,
+    letterSpacing: -0.4,
+    color: AppColors.label,
+  );
+
+  static const TextStyle headline = TextStyle(
+    fontSize: 17,
+    fontWeight: FontWeight.w600,
+    letterSpacing: -0.3,
+    color: AppColors.label,
+  );
+
+  static const TextStyle body = TextStyle(
+    fontSize: 16,
+    letterSpacing: -0.2,
+    color: AppColors.label,
+  );
+
+  static const TextStyle subhead = TextStyle(
+    fontSize: 14,
+    letterSpacing: -0.1,
+    color: AppColors.secondaryLabel,
+  );
+
+  static const TextStyle caption = TextStyle(
+    fontSize: 12,
+    color: AppColors.secondaryLabel,
+  );
+
+  /// Título de sección (como en Ajustes de iOS)
+  static const TextStyle section = TextStyle(
+    fontSize: 20,
+    fontWeight: FontWeight.w700,
+    letterSpacing: -0.4,
+    color: AppColors.label,
+  );
 }
 
 class AppTheme {
-  static ThemeData get light {
-    // (No visto en clase) ColorScheme.fromSeed genera una paleta
-    // completa (Material 3) a partir de un solo color.
-    final scheme = ColorScheme.fromSeed(
-      seedColor: AppColors.primary,
-      primary: AppColors.primary,
-      surface: AppColors.surface,
-    );
+  AppTheme._();
 
-    final borde = OutlineInputBorder(
-      borderRadius: BorderRadius.circular(16),
-      borderSide: BorderSide.none,
-    );
-
-    return ThemeData(
-      useMaterial3: true,
-      colorScheme: scheme,
-      scaffoldBackgroundColor: AppColors.background,
-      appBarTheme: const AppBarTheme(
-        backgroundColor: Colors.transparent,
-        foregroundColor: Colors.white,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        centerTitle: true,
-        titleTextStyle: TextStyle(
-          fontSize: 19,
-          fontWeight: FontWeight.w700,
-          color: Colors.white,
-          letterSpacing: 0.2,
-        ),
-      ),
-      // Estilo de TODOS los campos de texto en un solo lugar
-      inputDecorationTheme: InputDecorationTheme(
-        filled: true,
-        fillColor: AppColors.inputFill,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
-        border: borde,
-        enabledBorder: borde,
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: AppColors.primary, width: 1.6),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: AppColors.danger, width: 1.2),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: AppColors.danger, width: 1.6),
-        ),
-      ),
-      snackBarTheme: SnackBarThemeData(
-        behavior: SnackBarBehavior.floating,
-        backgroundColor: AppColors.textDark,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-      ),
-    );
-  }
+  static const CupertinoThemeData light = CupertinoThemeData(
+    brightness: Brightness.light,
+    primaryColor: AppColors.primary,
+    scaffoldBackgroundColor: AppColors.background,
+    barBackgroundColor: Color(0xF0F9F9F9),
+    textTheme: CupertinoTextThemeData(
+      primaryColor: AppColors.primary,
+      textStyle: AppText.body,
+      navLargeTitleTextStyle: AppText.largeTitle,
+    ),
+  );
 }

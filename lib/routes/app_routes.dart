@@ -1,71 +1,84 @@
-// Rutas de la aplicación (navegación centralizada)
-import 'package:flutter/material.dart';
+// Rutas de la aplicación (navegación centralizada con CupertinoPageRoute)
+import 'package:flutter/cupertino.dart';
 
 import '../models/producto.dart';
-import '../screens/listar_productos_screen.dart';
+import '../screens/editar_perfil_screen.dart';
+import '../screens/home_screen.dart';
 import '../screens/login_screen.dart';
-import '../screens/menu_screen.dart';
-import '../screens/perfil_screen.dart';
 import '../screens/registrar_producto_screen.dart';
 
 class AppRoutes {
-  // Nombres de las rutas: así evitamos escribir textos "a mano" en cada pantalla
-  static const String login = '/';
-  static const String menu = '/menu';
-  static const String listarProductos = '/productos';
-  static const String registrarProducto = '/productos/registrar';
-  static const String perfil = '/perfil';
+  AppRoutes._();
 
-  /// Devuelve la pantalla que corresponde a cada nombre de ruta.
+  static const String login = '/';
+  static const String home = '/home';
+  static const String registrarProducto = '/productos/registrar';
+  static const String editarPerfil = '/perfil/editar';
+
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
       case login:
-        return _fade(const LoginScreen(), settings);
-      case menu:
-        return _slide(const MenuScreen(), settings);
-      case listarProductos:
-        return _slide(const ListarProductosScreen(), settings);
+        return CupertinoPageRoute(settings: settings, builder: (_) => const LoginScreen());
+      case home:
+        return CupertinoPageRoute(settings: settings, builder: (_) => const HomeScreen());
       case registrarProducto:
-        // (No visto en clase) la misma pantalla sirve para
-        // REGISTRAR o EDITAR. Si llega un Producto como argumento,
-        // se abre en modo edición.
+        // La misma pantalla registra o edita: si llega un Producto, edita.
+        // fullscreenDialog: se abre desde abajo como un formulario modal de iOS.
         final producto = settings.arguments as Producto?;
-        return _slide(RegistrarProductoScreen(productoEditar: producto), settings);
-      case perfil:
-        return _slide(const PerfilScreen(), settings);
+        return CupertinoPageRoute(
+          settings: settings,
+          fullscreenDialog: true,
+          builder: (_) => RegistrarProductoScreen(productoEditar: producto),
+        );
+      case editarPerfil:
+        return CupertinoPageRoute(
+          settings: settings,
+          fullscreenDialog: true,
+          builder: (_) => const EditarPerfilScreen(),
+        );
       default:
-        return _fade(
-          const Scaffold(body: Center(child: Text('Ruta no encontrada'))),
-          settings,
+        return CupertinoPageRoute(
+          settings: settings,
+          builder: (_) => const CupertinoPageScaffold(
+            child: Center(child: Text('Ruta no encontrada')),
+          ),
         );
     }
   }
 
-  // (No visto en clase) PageRouteBuilder permite definir
-  // nuestras propias transiciones entre pantallas.
-
-  /// Transición deslizando desde la derecha (para avanzar en el flujo).
-  static PageRouteBuilder _slide(Widget page, RouteSettings settings) {
-    return PageRouteBuilder(
-      settings: settings,
-      transitionDuration: const Duration(milliseconds: 300),
-      pageBuilder: (_, __, ___) => page,
-      transitionsBuilder: (_, animation, __, child) {
-        final tween = Tween(begin: const Offset(1, 0), end: Offset.zero)
-            .chain(CurveTween(curve: Curves.easeOutCubic));
-        return SlideTransition(position: animation.drive(tween), child: child);
-      },
-    );
+  /// Abre una ruta en el navegador principal (por encima de las pestañas)
+  static Future<T?> abrir<T>(BuildContext context, String ruta, {Object? arguments}) {
+    return Navigator.of(context, rootNavigator: true).pushNamed<T>(ruta, arguments: arguments);
   }
 
-  /// Transición con desvanecimiento (para login / logout).
-  static PageRouteBuilder _fade(Widget page, RouteSettings settings) {
-    return PageRouteBuilder(
-      settings: settings,
-      transitionDuration: const Duration(milliseconds: 400),
-      pageBuilder: (_, __, ___) => page,
-      transitionsBuilder: (_, animation, __, child) =>
-          FadeTransition(opacity: animation, child: child),
+  /// Pide confirmación y vuelve al login borrando el historial
+  static Future<void> cerrarSesion(BuildContext context) async {
+    final salir = await showCupertinoDialog<bool>(
+      context: context,
+      builder: (ctx) => CupertinoAlertDialog(
+        title: const Text('Cerrar sesión'),
+        content: const Padding(
+          padding: EdgeInsets.only(top: 6),
+          child: Text('¿Seguro que deseas salir de TechStore?'),
+        ),
+        actions: [
+          CupertinoDialogAction(
+            isDefaultAction: true,
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancelar'),
+          ),
+          CupertinoDialogAction(
+            isDestructiveAction: true,
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Salir'),
+          ),
+        ],
+      ),
     );
+
+    if (salir == true && context.mounted) {
+      Navigator.of(context, rootNavigator: true)
+          .pushNamedAndRemoveUntil(login, (route) => false);
+    }
   }
 }

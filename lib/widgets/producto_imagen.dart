@@ -1,7 +1,7 @@
-// Widget reutilizable: foto del producto desde internet
-// - Muestra un indicador mientras carga
-// - Si falla (sin internet o URL mala) muestra el ícono de respaldo
-import 'package:flutter/material.dart';
+// Foto del producto desde internet.
+// Mientras carga muestra un CupertinoActivityIndicator y, si no hay foto
+// o falla la descarga, muestra el ícono de la categoría.
+import 'package:flutter/cupertino.dart';
 
 import '../theme/app_theme.dart';
 
@@ -17,62 +17,44 @@ class ProductoImagen extends StatelessWidget {
     required this.url,
     required this.iconoRespaldo,
     required this.categoria,
-    this.size = 80,
-    this.radius = 20,
+    this.size = 64,
+    this.radius = 14,
   });
 
   @override
   Widget build(BuildContext context) {
-    // Sin URL -> directamente el ícono con degradado
-    if (url == null || url!.isEmpty) return _respaldo();
+    final color = AppColors.categoria(categoria);
 
     return Container(
       width: size,
       height: size,
-      padding: EdgeInsets.all(size * 0.08),
       decoration: BoxDecoration(
-        color: const Color(0xFFF3F5FA),
+        color: AppColors.fill.withValues(alpha: 0.7),
         borderRadius: BorderRadius.circular(radius),
       ),
-      // (No visto en clase) Image.network carga la foto desde una URL.
-      //  - loadingBuilder: qué mostrar mientras descarga
-      //  - errorBuilder: qué mostrar si la descarga falla
-      child: Image.network(
-        url!,
-        fit: BoxFit.contain,
-        loadingBuilder: (_, child, progreso) {
-          if (progreso == null) return child; // ya terminó de cargar
-          final total = progreso.expectedTotalBytes;
-          return Center(
-            child: SizedBox(
-              width: size * 0.3,
-              height: size * 0.3,
-              child: CircularProgressIndicator(
-                strokeWidth: 2.5,
-                color: AppColors.primary,
-                value: total != null ? progreso.cumulativeBytesLoaded / total : null,
+      clipBehavior: Clip.antiAlias,
+      child: (url == null || url!.isEmpty)
+          ? _respaldo(color)
+          : Padding(
+              padding: EdgeInsets.all(size * 0.08),
+              child: Image.network(
+                url!,
+                fit: BoxFit.contain,
+                loadingBuilder: (_, child, progreso) {
+                  if (progreso == null) return child;
+                  return const Center(child: CupertinoActivityIndicator());
+                },
+                errorBuilder: (_, __, ___) => _respaldo(color),
               ),
             ),
-          );
-        },
-        errorBuilder: (_, __, ___) => _respaldo(conFondo: false),
-      ),
     );
   }
 
-  /// Ícono blanco sobre degradado (cuando no hay foto)
-  Widget _respaldo({bool conFondo = true}) {
-    final degradado = AppColors.gradientFor(categoria);
+  Widget _respaldo(Color color) {
     return Container(
-      width: conFondo ? size : null,
-      height: conFondo ? size : null,
-      decoration: BoxDecoration(
-        gradient: degradado,
-        borderRadius: BorderRadius.circular(radius),
-      ),
-      child: Center(
-        child: Icon(iconoRespaldo, size: size * 0.48, color: Colors.white),
-      ),
+      color: color.withValues(alpha: 0.12),
+      alignment: Alignment.center,
+      child: Icon(iconoRespaldo, size: size * 0.42, color: color),
     );
   }
 }

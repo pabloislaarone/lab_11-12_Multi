@@ -1,7 +1,7 @@
 // Datos de la app (en memoria, sin base de datos)
 // Productos reales con fotos del catálogo público DummyJSON
 // (https://dummyjson.com). Precios referenciales en soles.
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 
 import '../models/producto.dart';
 import '../models/usuario.dart';
@@ -14,10 +14,8 @@ class ImagenCatalogo {
   const ImagenCatalogo(this.nombre, this.categoria, this.url);
 }
 
-/// (No visto en clase) ValueNotifier es una forma sencilla de
-/// manejar ESTADO COMPARTIDO entre pantallas sin librerías externas.
-/// Cuando cambia `.value`, todos los ValueListenableBuilder que lo
-/// escuchan se redibujan automáticamente.
+/// Estado compartido de la app con ValueNotifier: cuando cambia `.value`,
+/// todas las pantallas que lo escuchan se redibujan solas.
 class AppData {
   AppData._(); // constructor privado: no se crean instancias
 
@@ -40,17 +38,17 @@ class AppData {
 
   /// Categorías con su ícono de respaldo
   static const Map<String, IconData> categorias = {
-    'Laptops': Icons.laptop_mac_rounded,
-    'Celulares': Icons.smartphone_rounded,
-    'Tablets': Icons.tablet_mac_rounded,
-    'Audio': Icons.headphones_rounded,
-    'Wearables': Icons.watch_rounded,
-    'Accesorios': Icons.cable_rounded,
-    'Otro': Icons.inventory_2_rounded,
+    'Laptops': CupertinoIcons.device_laptop,
+    'Celulares': CupertinoIcons.device_phone_portrait,
+    'Tablets': CupertinoIcons.rectangle,
+    'Audio': CupertinoIcons.headphones,
+    'Wearables': CupertinoIcons.clock,
+    'Accesorios': CupertinoIcons.bolt,
+    'Otro': CupertinoIcons.cube_box,
   };
 
   static IconData iconoDe(String categoria) =>
-      categorias[categoria] ?? Icons.inventory_2_rounded;
+      categorias[categoria] ?? CupertinoIcons.cube_box;
 
   /// Lista de productos inicial
   static final ValueNotifier<List<Producto>> productos = ValueNotifier([
@@ -63,7 +61,7 @@ class AppData {
       precio: 7499,
       stock: 24,
       imagenUrl: '$_cdn/laptops/apple-macbook-pro-14-inch-space-grey/thumbnail.webp',
-      icono: Icons.laptop_mac_rounded,
+      icono: CupertinoIcons.device_laptop,
     ),
     const Producto(
       id: '2',
@@ -74,7 +72,7 @@ class AppData {
       precio: 5599,
       stock: 9,
       imagenUrl: '$_cdn/laptops/new-dell-xps-13-9300-laptop/thumbnail.webp',
-      icono: Icons.laptop_mac_rounded,
+      icono: CupertinoIcons.device_laptop,
     ),
     const Producto(
       id: '3',
@@ -85,7 +83,7 @@ class AppData {
       precio: 4099,
       stock: 40,
       imagenUrl: '$_cdn/laptops/lenovo-yoga-920/thumbnail.webp',
-      icono: Icons.laptop_mac_rounded,
+      icono: CupertinoIcons.device_laptop,
     ),
     const Producto(
       id: '4',
@@ -96,7 +94,7 @@ class AppData {
       precio: 6699,
       stock: 6,
       imagenUrl: '$_cdn/laptops/asus-zenbook-pro-dual-screen-laptop/thumbnail.webp',
-      icono: Icons.laptop_mac_rounded,
+      icono: CupertinoIcons.device_laptop,
     ),
     const Producto(
       id: '5',
@@ -107,7 +105,7 @@ class AppData {
       precio: 4099,
       stock: 18,
       imagenUrl: '$_cdn/smartphones/iphone-13-pro/thumbnail.webp',
-      icono: Icons.smartphone_rounded,
+      icono: CupertinoIcons.device_phone_portrait,
     ),
     const Producto(
       id: '6',
@@ -118,7 +116,7 @@ class AppData {
       precio: 2599,
       stock: 19,
       imagenUrl: '$_cdn/smartphones/samsung-galaxy-s10/thumbnail.webp',
-      icono: Icons.smartphone_rounded,
+      icono: CupertinoIcons.device_phone_portrait,
     ),
     const Producto(
       id: '7',
@@ -129,7 +127,7 @@ class AppData {
       precio: 1899,
       stock: 47,
       imagenUrl: '$_cdn/tablets/ipad-mini-2021-starlight/thumbnail.webp',
-      icono: Icons.tablet_mac_rounded,
+      icono: CupertinoIcons.rectangle,
     ),
     const Producto(
       id: '8',
@@ -140,7 +138,7 @@ class AppData {
       precio: 2249,
       stock: 12,
       imagenUrl: '$_cdn/tablets/samsung-galaxy-tab-s8-plus-grey/thumbnail.webp',
-      icono: Icons.tablet_mac_rounded,
+      icono: CupertinoIcons.rectangle,
     ),
     const Producto(
       id: '9',
@@ -151,7 +149,7 @@ class AppData {
       precio: 489,
       stock: 35,
       imagenUrl: '$_cdn/mobile-accessories/apple-airpods/thumbnail.webp',
-      icono: Icons.headphones_rounded,
+      icono: CupertinoIcons.headphones,
     ),
     const Producto(
       id: '10',
@@ -162,7 +160,7 @@ class AppData {
       precio: 2059,
       stock: 4,
       imagenUrl: '$_cdn/mobile-accessories/apple-airpods-max-silver/thumbnail.webp',
-      icono: Icons.headphones_rounded,
+      icono: CupertinoIcons.headphones,
     ),
     const Producto(
       id: '11',
@@ -173,7 +171,7 @@ class AppData {
       precio: 189,
       stock: 50,
       imagenUrl: '$_cdn/mobile-accessories/beats-flex-wireless-earphones/thumbnail.webp',
-      icono: Icons.headphones_rounded,
+      icono: CupertinoIcons.headphones,
     ),
     const Producto(
       id: '12',
@@ -184,7 +182,7 @@ class AppData {
       precio: 1299,
       stock: 8,
       imagenUrl: '$_cdn/mobile-accessories/apple-watch-series-4-gold/thumbnail.webp',
-      icono: Icons.watch_rounded,
+      icono: CupertinoIcons.clock,
     ),
   ]);
 
@@ -234,6 +232,11 @@ class AppData {
   static void eliminarProducto(String id) {
     productos.value = productos.value.where((p) => p.id != id).toList();
   }
+
+  /// Productos con 8 unidades o menos
+  static List<Producto> get stockBajo =>
+      productos.value.where((p) => p.stock <= 8).toList()
+        ..sort((a, b) => a.stock.compareTo(b.stock));
 
   static String nuevoId() => DateTime.now().millisecondsSinceEpoch.toString();
 }
