@@ -1,20 +1,19 @@
-// PANTALLA 4: REGISTRAR PRODUCTO (también sirve para EDITAR)
-// Foto desde galería o URL, formulario por secciones y vista previa.
-import 'package:flutter/material.dart';
+// PANTALLA 4: REGISTRAR / EDITAR PRODUCTO
+// Formulario modal de iOS: foto, datos agrupados, selector de categoría
+// con CupertinoPicker, stock con botones +/- y vista previa en vivo.
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 
 import '../data/app_data.dart';
 import '../models/producto.dart';
-import '../routes/app_routes.dart';
 import '../theme/app_theme.dart';
-import '../widgets/custom_text_field.dart';
-import '../widgets/decorations.dart';
-import '../widgets/primary_button.dart';
-import '../widgets/producto_card.dart';
+import '../widgets/app_toast.dart';
 import '../widgets/producto_imagen.dart';
+import '../widgets/producto_tile.dart';
+import '../widgets/section_header.dart';
 
 class RegistrarProductoScreen extends StatefulWidget {
-  /// Si es null -> REGISTRAR. Si trae un producto -> EDITAR.
+  /// Si llega un producto, la pantalla se abre en modo edición
   final Producto? productoEditar;
 
   const RegistrarProductoScreen({super.key, this.productoEditar});
@@ -30,26 +29,30 @@ class _RegistrarProductoScreenState extends State<RegistrarProductoScreen> {
   late final TextEditingController _descCtrl;
   late final TextEditingController _precioCtrl;
   late final TextEditingController _stockCtrl;
+  late String _categoria;
+  String? _imagenUrl;
+  bool _modificado = false;
 
-  String? _imagenUrl;          // foto elegida
-  String _categoria = 'Otro';  // categoría del producto
-  bool _guardando = false;
-
-  bool get _esEdicion => widget.productoEditar != null;
+  bool get _editando => widget.productoEditar != null;
 
   @override
   void initState() {
     super.initState();
-    // Si estamos editando, llenamos los campos con los datos actuales
     final p = widget.productoEditar;
     _nombreCtrl = TextEditingController(text: p?.nombre ?? '');
     _marcaCtrl = TextEditingController(text: p?.marca ?? '');
     _descCtrl = TextEditingController(text: p?.descripcion ?? '');
-    _precioCtrl = TextEditingController(text: p != null ? p.precio.toStringAsFixed(2) : '');
-    _stockCtrl = TextEditingController(text: p?.stock.toString() ?? '');
+    _precioCtrl = TextEditingController(text: p == null ? '' : p.precio.toStringAsFixed(2));
+    _stockCtrl = TextEditingController(text: p == null ? '1' : '${p.stock}');
+    _categoria = p?.categoria ?? 'Laptops';
     _imagenUrl = p?.imagenUrl;
-    _categoria = p?.categoria ?? 'Otro';
+
+    for (final c in [_nombreCtrl, _marcaCtrl, _descCtrl, _precioCtrl, _stockCtrl]) {
+      c.addListener(_marcarModificado);
+    }
   }
+
+  void _marcarModificado() => _modificado = true;
 
   @override
   void dispose() {
@@ -61,339 +64,230 @@ class _RegistrarProductoScreenState extends State<RegistrarProductoScreen> {
     super.dispose();
   }
 
-  /// Arma un Producto con lo que hay escrito (para la vista previa y guardar)
+  int get _stock => int.tryParse(_stockCtrl.text) ?? 0;
+
+  void _cambiarStock(int delta) {
+    final nuevo = (_stock + delta).clamp(0, 9999);
+    _stockCtrl.text = '$nuevo';
+    HapticFeedback.selectionClick();
+  }
+
+  /// Producto armado con lo que hay en el formulario
   Producto _productoActual() {
     return Producto(
       id: widget.productoEditar?.id ?? AppData.nuevoId(),
-      nombre: _nombreCtrl.text.trim(),
+      nombre: _nombreCtrl.text.trim().isEmpty ? 'Nombre del producto' : _nombreCtrl.text.trim(),
       marca: _marcaCtrl.text.trim(),
       descripcion: _descCtrl.text.trim(),
-      precio: double.tryParse(_precioCtrl.text.replaceAll(',', '.')) ?? 0,
-      stock: int.tryParse(_stockCtrl.text) ?? 0,
+      precio: double.tryParse(_precioCtrl.text) ?? 0,
+      stock: _stock,
       categoria: _categoria,
       imagenUrl: _imagenUrl,
       icono: AppData.iconoDe(_categoria),
     );
   }
 
-  /// Hoja para elegir la foto: galería del catálogo o pegar una URL
-  Future<void> _seleccionarImagen() async {
-    final resultado = await showModalBottomSheet<ImagenCatalogo>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-      ),
-      builder: (_) => _SelectorImagen(urlActual: _imagenUrl, categoriaActual: _categoria),
-    );
-    if (resultado != null) {
-      setState(() {
-        _imagenUrl = resultado.url.isEmpty ? null : resultado.url;
-        _categoria = resultado.categoria;
-        // Si el nombre está vacío, sugerimos el de la foto elegida
-        if (_nombreCtrl.text.trim().isEmpty && resultado.nombre.isNotEmpty) {
-          _nombreCtrl.text = resultado.nombre;
-        }
-      });
+  void _guardar() {
+    FocusScope.of(context).unfocus();
+    if (!_formKey.currentState!.validate()) {
+      HapticFeedback.mediumImpact();
+      return;
     }
-  }
 
-  Future<void> _guardar() async {
-    FocusScope.of(context).unfocus(); // oculta el teclado
-    if (!_formKey.currentState!.validate()) return;
-
-    setState(() => _guardando = true);
-    await Future.delayed(const Duration(milliseconds: 700)); // simula guardado
-    if (!mounted) return;
-
-    final datos = _productoActual();
-    if (_esEdicion) {
-      AppData.actualizarProducto(datos);
+    final producto = _productoActual();
+    if (_editando) {
+      AppData.actualizarProducto(producto);
     } else {
-      AppData.agregarProducto(datos);
+      AppData.agregarProducto(producto);
     }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        backgroundColor: AppColors.success,
-        content: Row(children: [
-          const Icon(Icons.check_circle_rounded, color: Colors.white),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(_esEdicion
-                ? 'Producto actualizado correctamente'
-                : '"${datos.nombre}" registrado'),
-          ),
-        ]),
-      ),
-    );
-
-    // Flujo: después de guardar SIEMPRE terminamos en la lista, con el
-    // Menú debajo (Menú -> Lista), vengas de donde vengas.
-    // (No visto en clase) pushNamedAndRemoveUntil + ModalRoute.withName
-    // limpia la pila de navegación hasta una ruta concreta.
-    Navigator.pushNamedAndRemoveUntil(
+    HapticFeedback.lightImpact();
+    AppToast.show(
       context,
-      AppRoutes.listarProductos,
-      ModalRoute.withName(AppRoutes.menu),
+      _editando ? 'Cambios guardados' : '"${producto.nombre}" registrado',
+    );
+    Navigator.pop(context);
+  }
+
+  /// Si hay cambios sin guardar, pregunta antes de salir
+  void _cancelar() {
+    if (!_modificado) {
+      Navigator.pop(context);
+      return;
+    }
+    showCupertinoModalPopup<void>(
+      context: context,
+      builder: (ctx) => CupertinoActionSheet(
+        message: const Text('Tienes cambios sin guardar.'),
+        actions: [
+          CupertinoActionSheetAction(
+            isDestructiveAction: true,
+            onPressed: () {
+              Navigator.pop(ctx);
+              Navigator.pop(context);
+            },
+            child: const Text('Descartar cambios'),
+          ),
+        ],
+        cancelButton: CupertinoActionSheetAction(
+          isDefaultAction: true,
+          onPressed: () => Navigator.pop(ctx),
+          child: const Text('Seguir editando'),
+        ),
+      ),
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final tieneFoto = _imagenUrl != null;
+  // ---------- Foto ----------
 
-    return Scaffold(
-      extendBodyBehindAppBar: true, // el cuerpo pasa detrás del AppBar
-      appBar: AppBar(
-        title: Text(_esEdicion ? 'Editar Producto' : 'Registrar Producto'),
+  void _opcionesFoto() {
+    showCupertinoModalPopup<void>(
+      context: context,
+      builder: (ctx) => CupertinoActionSheet(
+        title: const Text('Foto del producto'),
+        actions: [
+          CupertinoActionSheetAction(
+            onPressed: () {
+              Navigator.pop(ctx);
+              _elegirDeGaleria();
+            },
+            child: const Text('Elegir de la galería'),
+          ),
+          CupertinoActionSheetAction(
+            onPressed: () {
+              Navigator.pop(ctx);
+              _pegarUrl();
+            },
+            child: const Text('Pegar URL de imagen'),
+          ),
+          if (_imagenUrl != null && _imagenUrl!.isNotEmpty)
+            CupertinoActionSheetAction(
+              isDestructiveAction: true,
+              onPressed: () {
+                Navigator.pop(ctx);
+                setState(() {
+                  _imagenUrl = null;
+                  _modificado = true;
+                });
+              },
+              child: const Text('Quitar foto'),
+            ),
+        ],
+        cancelButton: CupertinoActionSheetAction(
+          isDefaultAction: true,
+          onPressed: () => Navigator.pop(ctx),
+          child: const Text('Cancelar'),
+        ),
       ),
-      body: SingleChildScrollView(
-        child: Form(
-          key: _formKey,
+    );
+  }
+
+  Future<void> _elegirDeGaleria() async {
+    final foto = await showCupertinoModalPopup<ImagenCatalogo>(
+      context: context,
+      builder: (_) => _GaleriaSheet(categoriaActual: _categoria),
+    );
+    if (foto == null) return;
+    setState(() {
+      _imagenUrl = foto.url;
+      _categoria = foto.categoria;
+      _modificado = true;
+    });
+  }
+
+  Future<void> _pegarUrl() async {
+    final ctrl = TextEditingController(text: _imagenUrl ?? '');
+    final url = await showCupertinoDialog<String>(
+      context: context,
+      builder: (ctx) => CupertinoAlertDialog(
+        title: const Text('URL de la imagen'),
+        content: Padding(
+          padding: const EdgeInsets.only(top: 12),
+          child: CupertinoTextField(
+            controller: ctrl,
+            placeholder: 'https://...',
+            keyboardType: TextInputType.url,
+            autocorrect: false,
+            autofocus: true,
+          ),
+        ),
+        actions: [
+          CupertinoDialogAction(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancelar'),
+          ),
+          CupertinoDialogAction(
+            isDefaultAction: true,
+            onPressed: () => Navigator.pop(ctx, ctrl.text.trim()),
+            child: const Text('Usar'),
+          ),
+        ],
+      ),
+    );
+    ctrl.dispose();
+    if (url == null || url.isEmpty) return;
+    setState(() {
+      _imagenUrl = url;
+      _modificado = true;
+    });
+  }
+
+  // ---------- Categoría ----------
+
+  void _elegirCategoria() {
+    final categorias = AppData.categorias.keys.toList();
+    var indice = categorias.indexOf(_categoria);
+    if (indice < 0) indice = 0;
+
+    showCupertinoModalPopup<void>(
+      context: context,
+      builder: (ctx) => Container(
+        height: 300,
+        decoration: const BoxDecoration(
+          color: AppColors.card,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        ),
+        child: SafeArea(
+          top: false,
           child: Column(
             children: [
-              // Encabezado con selector de foto
-              GradientHeader(
-                height: 320,
-                child: SafeArea(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const SizedBox(height: 40),
-                      GestureDetector(
-                        onTap: _seleccionarImagen,
-                        child: Stack(
-                          clipBehavior: Clip.none,
-                          children: [
-                            // (No visto en clase) AnimatedContainer
-                            // anima los cambios de color y sombra.
-                            AnimatedContainer(
-                              duration: const Duration(milliseconds: 300),
-                              width: 150,
-                              height: 150,
-                              padding: const EdgeInsets.all(6),
-                              decoration: BoxDecoration(
-                                color: tieneFoto
-                                    ? Colors.white
-                                    : Colors.white.withValues(alpha: 0.15),
-                                borderRadius: BorderRadius.circular(36),
-                                border: Border.all(
-                                  color: Colors.white.withValues(alpha: 0.6),
-                                  width: 2,
-                                ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.18),
-                                    blurRadius: 24,
-                                    offset: const Offset(0, 12),
-                                  ),
-                                ],
-                              ),
-                              child: tieneFoto
-                                  ? ProductoImagen(
-                                      url: _imagenUrl,
-                                      iconoRespaldo: AppData.iconoDe(_categoria),
-                                      categoria: _categoria,
-                                      size: 134,
-                                      radius: 30,
-                                    )
-                                  : const Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        Icon(Icons.add_a_photo_rounded,
-                                            size: 46, color: Colors.white),
-                                        SizedBox(height: 8),
-                                        Text('Seleccionar\nimagen',
-                                            textAlign: TextAlign.center,
-                                            style: TextStyle(
-                                                color: Colors.white, fontSize: 12)),
-                                      ],
-                                    ),
-                            ),
-                            Positioned(
-                              right: -6,
-                              bottom: -6,
-                              child: Container(
-                                padding: const EdgeInsets.all(9),
-                                decoration: BoxDecoration(
-                                  gradient: AppColors.buttonGradient,
-                                  shape: BoxShape.circle,
-                                  border: Border.all(color: Colors.white, width: 3),
-                                ),
-                                child: const Icon(Icons.photo_library_rounded,
-                                    size: 18, color: Colors.white),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 14),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.18),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(AppData.iconoDe(_categoria), color: Colors.white, size: 16),
-                            const SizedBox(width: 6),
-                            Text(
-                              'Categoría: $_categoria',
-                              style: const TextStyle(
-                                  color: Colors.white, fontWeight: FontWeight.w600),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+              Row(
+                children: [
+                  CupertinoButton(
+                    onPressed: () => Navigator.pop(ctx),
+                    child: const Text('Cancelar'),
                   ),
-                ),
+                  const Spacer(),
+                  const Text('Categoría', style: AppText.headline),
+                  const Spacer(),
+                  CupertinoButton(
+                    onPressed: () {
+                      setState(() {
+                        _categoria = categorias[indice];
+                        _modificado = true;
+                      });
+                      Navigator.pop(ctx);
+                    },
+                    child: const Text('Listo', style: TextStyle(fontWeight: FontWeight.w600)),
+                  ),
+                ],
               ),
-
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 4, 20, 32),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
+              Container(height: 0.5, color: AppColors.separator),
+              Expanded(
+                child: CupertinoPicker(
+                  itemExtent: 40,
+                  scrollController: FixedExtentScrollController(initialItem: indice),
+                  onSelectedItemChanged: (i) => indice = i,
                   children: [
-                    // Datos generales
-                    FadeSlideIn(
-                      child: SectionCard(
-                        titulo: 'Información del producto',
-                        icono: Icons.info_outline_rounded,
-                        child: Column(
-                          children: [
-                            CustomTextField(
-                              controller: _nombreCtrl,
-                              hint: 'Nombre del producto',
-                              icon: Icons.label_outline_rounded,
-                              validator: (v) => (v == null || v.trim().length < 2)
-                                  ? 'Ingresa un nombre válido'
-                                  : null,
-                            ),
-                            const SizedBox(height: 14),
-                            CustomTextField(
-                              controller: _marcaCtrl,
-                              hint: 'Marca (Apple, Samsung...)',
-                              icon: Icons.verified_outlined,
-                            ),
-                            const SizedBox(height: 14),
-                            // Categoría con menú desplegable
-                            DropdownButtonFormField<String>(
-                              value: _categoria,
-                              borderRadius: BorderRadius.circular(16),
-                              decoration: InputDecoration(
-                                prefixIcon: Icon(Icons.category_outlined,
-                                    color: AppColors.primary.withValues(alpha: 0.75)),
-                              ),
-                              items: AppData.categorias.entries
-                                  .map((e) => DropdownMenuItem(
-                                        value: e.key,
-                                        child: Row(children: [
-                                          Icon(e.value, size: 18, color: AppColors.textLight),
-                                          const SizedBox(width: 10),
-                                          Text(e.key),
-                                        ]),
-                                      ))
-                                  .toList(),
-                              onChanged: (v) => setState(() => _categoria = v ?? 'Otro'),
-                            ),
-                            const SizedBox(height: 14),
-                            CustomTextField(
-                              controller: _descCtrl,
-                              hint: 'Descripción',
-                              icon: Icons.notes_rounded,
-                              maxLines: 3,
-                            ),
-                          ],
-                        ),
+                    for (final c in categorias)
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(AppData.iconoDe(c), size: 20, color: AppColors.categoria(c)),
+                          const SizedBox(width: 10),
+                          Text(c),
+                        ],
                       ),
-                    ),
-                    const SizedBox(height: 18),
-
-                    // Precio y stock
-                    FadeSlideIn(
-                      delay: 150,
-                      child: SectionCard(
-                        titulo: 'Precio y stock',
-                        icono: Icons.sell_outlined,
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(
-                              child: CustomTextField(
-                                controller: _precioCtrl,
-                                hint: '0.00',
-                                prefixText: 'S/ ',
-                                keyboardType:
-                                    const TextInputType.numberWithOptions(decimal: true),
-                                inputFormatters: [
-                                  // Solo números con hasta 2 decimales
-                                  FilteringTextInputFormatter.allow(
-                                      RegExp(r'^\d*[.,]?\d{0,2}')),
-                                ],
-                                validator: (v) {
-                                  final n = double.tryParse((v ?? '').replaceAll(',', '.'));
-                                  if (n == null) return 'Precio requerido';
-                                  if (n <= 0) return 'Mayor a 0';
-                                  return null;
-                                },
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: CustomTextField(
-                                controller: _stockCtrl,
-                                hint: 'Stock',
-                                icon: Icons.inventory_outlined,
-                                keyboardType: TextInputType.number,
-                                textInputAction: TextInputAction.done,
-                                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                                validator: (v) =>
-                                    int.tryParse(v ?? '') == null ? 'Stock requerido' : null,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Vista previa en vivo
-                    const Padding(
-                      padding: EdgeInsets.only(left: 4, bottom: 10),
-                      child: Text(
-                        'VISTA PREVIA',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 1.4,
-                          color: AppColors.textLight,
-                        ),
-                      ),
-                    ),
-                    // (No visto en clase) ListenableBuilder +
-                    // Listenable.merge redibuja la tarjeta cada vez que
-                    // cambia CUALQUIERA de los campos, sin usar setState.
-                    ListenableBuilder(
-                      listenable: Listenable.merge(
-                          [_nombreCtrl, _marcaCtrl, _precioCtrl, _stockCtrl, _descCtrl]),
-                      builder: (_, __) => ProductoCard(
-                        producto: _productoActual(),
-                        soloLectura: true,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    PrimaryButton(
-                      text: _esEdicion ? 'ACTUALIZAR' : 'GUARDAR',
-                      icon: Icons.save_rounded,
-                      loading: _guardando,
-                      onPressed: _guardar,
-                    ),
                   ],
                 ),
               ),
@@ -403,159 +297,411 @@ class _RegistrarProductoScreenState extends State<RegistrarProductoScreen> {
       ),
     );
   }
+
+  // ---------- Vista ----------
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoPageScaffold(
+      navigationBar: CupertinoNavigationBar(
+        leading: CupertinoButton(
+          padding: EdgeInsets.zero,
+          onPressed: _cancelar,
+          child: const Text('Cancelar'),
+        ),
+        middle: Text(_editando ? 'Editar producto' : 'Nuevo producto'),
+        trailing: CupertinoButton(
+          padding: EdgeInsets.zero,
+          onPressed: _guardar,
+          child: const Text('Guardar', style: TextStyle(fontWeight: FontWeight.w600)),
+        ),
+      ),
+      child: SafeArea(
+        child: GestureDetector(
+          onTap: () => FocusScope.of(context).unfocus(),
+          child: Form(
+            key: _formKey,
+            child: ListView(
+              padding: const EdgeInsets.only(bottom: 32),
+              children: [
+                _selectorFoto(),
+
+                CupertinoFormSection.insetGrouped(
+                  header: const SectionHeader('Información'),
+                  children: [
+                    CupertinoTextFormFieldRow(
+                      controller: _nombreCtrl,
+                      prefix: const _Etiqueta('Nombre'),
+                      placeholder: 'Ej. MacBook Air 13"',
+                      textInputAction: TextInputAction.next,
+                      validator: (v) {
+                        if (v == null || v.trim().isEmpty) return 'El nombre es obligatorio';
+                        if (v.trim().length < 3) return 'Mínimo 3 caracteres';
+                        return null;
+                      },
+                    ),
+                    CupertinoTextFormFieldRow(
+                      controller: _marcaCtrl,
+                      prefix: const _Etiqueta('Marca'),
+                      placeholder: 'Apple, Samsung, Lenovo...',
+                      textInputAction: TextInputAction.next,
+                    ),
+                    CupertinoFormRow(
+                      prefix: const _Etiqueta('Categoría'),
+                      child: CupertinoButton(
+                        padding: EdgeInsets.zero,
+                        onPressed: _elegirCategoria,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              AppData.iconoDe(_categoria),
+                              size: 18,
+                              color: AppColors.categoria(_categoria),
+                            ),
+                            const SizedBox(width: 6),
+                            Text(_categoria, style: const TextStyle(color: AppColors.label)),
+                            const SizedBox(width: 4),
+                            const Icon(
+                              CupertinoIcons.chevron_up_chevron_down,
+                              size: 14,
+                              color: AppColors.tertiaryLabel,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    CupertinoTextFormFieldRow(
+                      controller: _descCtrl,
+                      prefix: const _Etiqueta('Descripción'),
+                      placeholder: 'Características principales',
+                      minLines: 1,
+                      maxLines: 4,
+                      keyboardType: TextInputType.multiline,
+                    ),
+                  ],
+                ),
+
+                CupertinoFormSection.insetGrouped(
+                  header: const SectionHeader('Precio y stock'),
+                  footer: const Text('El precio se registra en soles (S/).'),
+                  children: [
+                    CupertinoTextFormFieldRow(
+                      controller: _precioCtrl,
+                      prefix: const _Etiqueta('Precio'),
+                      placeholder: '0.00',
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
+                      ],
+                      validator: (v) {
+                        final precio = double.tryParse(v ?? '');
+                        if (precio == null) return 'Ingresa un precio válido';
+                        if (precio <= 0) return 'El precio debe ser mayor a 0';
+                        return null;
+                      },
+                    ),
+                    CupertinoFormRow(
+                      prefix: const _Etiqueta('Stock'),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          _BotonPaso(icon: CupertinoIcons.minus, onTap: () => _cambiarStock(-1)),
+                          SizedBox(
+                            width: 64,
+                            child: CupertinoTextField.borderless(
+                              controller: _stockCtrl,
+                              textAlign: TextAlign.center,
+                              keyboardType: TextInputType.number,
+                              inputFormatters: [
+                                FilteringTextInputFormatter.digitsOnly,
+                                LengthLimitingTextInputFormatter(4),
+                              ],
+                              style: AppText.headline,
+                            ),
+                          ),
+                          _BotonPaso(icon: CupertinoIcons.plus, onTap: () => _cambiarStock(1)),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+
+                // Vista previa: se actualiza mientras escribes
+                CupertinoListSection.insetGrouped(
+                  header: const SectionHeader('Vista previa'),
+                  backgroundColor: AppColors.background,
+                  decoration: const BoxDecoration(),
+                  children: [
+                    ListenableBuilder(
+                      listenable: Listenable.merge(
+                        [_nombreCtrl, _marcaCtrl, _precioCtrl, _stockCtrl],
+                      ),
+                      builder: (_, __) => ProductoTile(
+                        producto: _productoActual(),
+                        onTap: () {},
+                        onMas: () {},
+                        conHero: false,
+                      ),
+                    ),
+                  ],
+                ),
+
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: CupertinoButton.filled(
+                      borderRadius: BorderRadius.circular(14),
+                      onPressed: _guardar,
+                      child: Text(
+                        _editando ? 'Guardar cambios' : 'Registrar producto',
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _selectorFoto() {
+    final tieneFoto = _imagenUrl != null && _imagenUrl!.isNotEmpty;
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 20),
+      child: Column(
+        children: [
+          GestureDetector(
+            onTap: _opcionesFoto,
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Container(
+                  decoration: BoxDecoration(
+                    color: AppColors.card,
+                    borderRadius: BorderRadius.circular(28),
+                    boxShadow: AppColors.softShadow,
+                  ),
+                  padding: const EdgeInsets.all(10),
+                  child: tieneFoto
+                      ? ProductoImagen(
+                          url: _imagenUrl,
+                          iconoRespaldo: AppData.iconoDe(_categoria),
+                          categoria: _categoria,
+                          size: 140,
+                          radius: 20,
+                        )
+                      : Container(
+                          width: 140,
+                          height: 140,
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withValues(alpha: 0.08),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: const Icon(
+                            CupertinoIcons.camera_fill,
+                            size: 40,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                ),
+                Positioned(
+                  right: -4,
+                  bottom: -4,
+                  child: Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: AppColors.primary,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: AppColors.background, width: 3),
+                    ),
+                    child: Icon(
+                      tieneFoto ? CupertinoIcons.pencil : CupertinoIcons.plus,
+                      size: 18,
+                      color: CupertinoColors.white,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 10),
+          CupertinoButton(
+            padding: EdgeInsets.zero,
+            onPressed: _opcionesFoto,
+            child: Text(
+              tieneFoto ? 'Cambiar foto' : 'Agregar foto',
+              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
-/// Hoja inferior con la galería de fotos y la opción de pegar una URL
-class _SelectorImagen extends StatefulWidget {
-  final String? urlActual;
+/// Texto de la izquierda en cada fila del formulario (ancho fijo para alinear)
+class _Etiqueta extends StatelessWidget {
+  final String texto;
+  const _Etiqueta(this.texto);
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 100,
+      child: Text(texto, style: const TextStyle(fontSize: 16, color: AppColors.label)),
+    );
+  }
+}
+
+/// Botón redondo de - / + para el stock
+class _BotonPaso extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback onTap;
+  const _BotonPaso({required this.icon, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 32,
+        height: 32,
+        decoration: BoxDecoration(
+          color: AppColors.fill,
+          borderRadius: BorderRadius.circular(9),
+        ),
+        child: Icon(icon, size: 16, color: AppColors.primary),
+      ),
+    );
+  }
+}
+
+/// Hoja con las fotos del catálogo para elegir
+class _GaleriaSheet extends StatefulWidget {
   final String categoriaActual;
-  const _SelectorImagen({required this.urlActual, required this.categoriaActual});
+  const _GaleriaSheet({required this.categoriaActual});
 
   @override
-  State<_SelectorImagen> createState() => _SelectorImagenState();
+  State<_GaleriaSheet> createState() => _GaleriaSheetState();
 }
 
-class _SelectorImagenState extends State<_SelectorImagen> {
-  final _urlCtrl = TextEditingController();
-  String _filtro = 'Todas';
+class _GaleriaSheetState extends State<_GaleriaSheet> {
+  late String _filtro;
 
   @override
-  void dispose() {
-    _urlCtrl.dispose();
-    super.dispose();
+  void initState() {
+    super.initState();
+    final hayFotos = AppData.galeria.any((f) => f.categoria == widget.categoriaActual);
+    _filtro = hayFotos ? widget.categoriaActual : 'Todas';
   }
 
   @override
   Widget build(BuildContext context) {
-    final cats = ['Todas', ...{for (final i in AppData.galeria) i.categoria}];
+    final cats = ['Todas', ...{for (final f in AppData.galeria) f.categoria}];
     final fotos = AppData.galeria
-        .where((i) => _filtro == 'Todas' || i.categoria == _filtro)
+        .where((f) => _filtro == 'Todas' || f.categoria == _filtro)
         .toList();
 
-    return Padding(
-      // viewInsets.bottom = alto del teclado (para el campo URL)
-      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-      child: ConstrainedBox(
-        constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.85),
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.75,
+      decoration: const BoxDecoration(
+        color: AppColors.background,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      child: SafeArea(
+        top: false,
         child: Column(
-          mainAxisSize: MainAxisSize.min,
           children: [
-            const SizedBox(height: 14),
+            const SizedBox(height: 8),
             Container(
-              width: 44,
+              width: 36,
               height: 5,
               decoration: BoxDecoration(
-                color: AppColors.border,
-                borderRadius: BorderRadius.circular(4),
+                color: AppColors.tertiaryLabel,
+                borderRadius: BorderRadius.circular(3),
               ),
             ),
-            const SizedBox(height: 16),
-            const Text('Elige una foto',
-                style: TextStyle(fontSize: 19, fontWeight: FontWeight.w800)),
-            const SizedBox(height: 4),
-            const Text('De la galería o pegando una URL',
-                style: TextStyle(color: AppColors.textLight)),
-            const SizedBox(height: 14),
-
-            // Pegar URL
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              padding: const EdgeInsets.fromLTRB(20, 8, 8, 0),
               child: Row(
                 children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _urlCtrl,
-                      keyboardType: TextInputType.url,
-                      decoration: const InputDecoration(
-                        hintText: 'https://.../imagen.jpg',
-                        prefixIcon: Icon(Icons.link_rounded),
-                        contentPadding: EdgeInsets.symmetric(vertical: 14),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  FilledButton(
-                    style: FilledButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                    ),
-                    onPressed: () {
-                      final url = _urlCtrl.text.trim();
-                      if (!url.startsWith('http')) return;
-                      Navigator.pop(
-                          context, ImagenCatalogo('', widget.categoriaActual, url));
-                    },
-                    child: const Text('Usar'),
+                  const Text('Galería', style: AppText.title),
+                  const Spacer(),
+                  CupertinoButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Cerrar'),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 8),
-
-            // Filtro por categoría
             SizedBox(
-              height: 48,
+              height: 44,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                 itemCount: cats.length,
                 separatorBuilder: (_, __) => const SizedBox(width: 8),
                 itemBuilder: (_, i) {
-                  final activo = cats[i] == _filtro;
-                  return ChoiceChip(
-                    label: Text(cats[i]),
-                    selected: activo,
-                    showCheckmark: false,
-                    selectedColor: AppColors.primary,
-                    labelStyle: TextStyle(
-                      color: activo ? Colors.white : AppColors.textDark,
-                      fontWeight: FontWeight.w600,
+                  final activa = cats[i] == _filtro;
+                  return GestureDetector(
+                    onTap: () => setState(() => _filtro = cats[i]),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14),
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: activa ? AppColors.label : AppColors.card,
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                      child: Text(
+                        cats[i],
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: activa ? CupertinoColors.white : AppColors.label,
+                        ),
+                      ),
                     ),
-                    onSelected: (_) => setState(() => _filtro = cats[i]),
                   );
                 },
               ),
             ),
-
-            // Galería
-            Flexible(
+            Expanded(
               child: GridView.builder(
-                shrinkWrap: true,
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 3,
                   mainAxisSpacing: 12,
                   crossAxisSpacing: 12,
-                  childAspectRatio: 0.82,
+                  childAspectRatio: 0.78,
                 ),
                 itemCount: fotos.length,
                 itemBuilder: (_, i) {
                   final foto = fotos[i];
-                  final seleccionada = foto.url == widget.urlActual;
-                  return InkWell(
-                    borderRadius: BorderRadius.circular(18),
+                  return GestureDetector(
                     onTap: () => Navigator.pop(context, foto),
                     child: Container(
-                      padding: const EdgeInsets.all(6),
+                      padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(18),
-                        border: Border.all(
-                          color: seleccionada ? AppColors.primary : AppColors.border,
-                          width: seleccionada ? 2.5 : 1,
-                        ),
+                        color: AppColors.card,
+                        borderRadius: BorderRadius.circular(14),
                       ),
                       child: Column(
                         children: [
                           Expanded(
                             child: LayoutBuilder(
-                              // (No visto en clase) LayoutBuilder nos da
-                              // el tamaño disponible para dimensionar la foto.
                               builder: (_, c) => ProductoImagen(
                                 url: foto.url,
                                 iconoRespaldo: AppData.iconoDe(foto.categoria),
                                 categoria: foto.categoria,
-                                size: c.biggest.shortestSide,
-                                radius: 14,
+                                size: c.maxWidth < c.maxHeight ? c.maxWidth : c.maxHeight,
+                                radius: 10,
                               ),
                             ),
                           ),
@@ -564,7 +710,7 @@ class _SelectorImagenState extends State<_SelectorImagen> {
                             foto.nombre,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
+                            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
                           ),
                         ],
                       ),
@@ -573,15 +719,6 @@ class _SelectorImagenState extends State<_SelectorImagen> {
                 },
               ),
             ),
-
-            // Quitar foto
-            TextButton.icon(
-              onPressed: () =>
-                  Navigator.pop(context, ImagenCatalogo('', widget.categoriaActual, '')),
-              icon: const Icon(Icons.hide_image_outlined),
-              label: const Text('Sin foto (usar ícono)'),
-            ),
-            SizedBox(height: MediaQuery.of(context).padding.bottom + 8),
           ],
         ),
       ),

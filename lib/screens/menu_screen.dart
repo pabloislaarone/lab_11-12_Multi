@@ -1,67 +1,31 @@
-// PANTALLA 2: MENÚ PRINCIPAL
-// Encabezado con saludo, estadísticas y accesos a cada pantalla.
-import 'package:flutter/material.dart';
+// PANTALLA 2: MENÚ PRINCIPAL (pestaña Inicio)
+// Saludo, resumen del inventario, accesos a cada pantalla,
+// productos con stock bajo y carrusel de destacados.
+import 'package:flutter/cupertino.dart';
 
 import '../data/app_data.dart';
 import '../models/producto.dart';
 import '../models/usuario.dart';
 import '../routes/app_routes.dart';
 import '../theme/app_theme.dart';
-import '../widgets/decorations.dart';
-import '../widgets/menu_option_tile.dart';
+import '../widgets/icon_box.dart';
 import '../widgets/producto_imagen.dart';
+import '../widgets/producto_tile.dart';
+import '../widgets/section_header.dart';
+import 'detalle_producto_screen.dart';
 
 class MenuScreen extends StatelessWidget {
-  const MenuScreen({super.key});
+  final VoidCallback onVerProductos;
+  final VoidCallback onVerPerfil;
 
-  /// Pide confirmación antes de cerrar sesión
-  static Future<void> logout(BuildContext context) async {
-    // (No visto en clase) showDialog devuelve un valor (true/false)
-    // según el botón que el usuario presione.
-    final confirmar = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        icon: Container(
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: AppColors.danger.withValues(alpha: 0.12),
-            shape: BoxShape.circle,
-          ),
-          child: const Icon(Icons.logout_rounded, color: AppColors.danger, size: 32),
-        ),
-        title: const Text('Cerrar sesión', style: TextStyle(fontWeight: FontWeight.w800)),
-        content: const Text(
-          '¿Seguro que deseas salir de la aplicación?',
-          textAlign: TextAlign.center,
-        ),
-        actionsAlignment: MainAxisAlignment.center,
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancelar'),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: AppColors.danger,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            ),
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Sí, salir'),
-          ),
-        ],
-      ),
-    );
+  const MenuScreen({
+    super.key,
+    required this.onVerProductos,
+    required this.onVerPerfil,
+  });
 
-    if (confirmar == true && context.mounted) {
-      // (No visto en clase) pushNamedAndRemoveUntil borra TODO el
-      // historial de navegación y deja solo el Login.
-      Navigator.pushNamedAndRemoveUntil(context, AppRoutes.login, (route) => false);
-    }
-  }
-
-  /// Fecha en español sin librerías: "Sábado, 17 de octubre"
-  String _fechaHoy() {
+  /// Fecha en español sin librerías: "Sábado, 14 de noviembre"
+  static String fechaHoy() {
     const dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
     const meses = [
       'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
@@ -71,263 +35,338 @@ class MenuScreen extends StatelessWidget {
     return '${dias[h.weekday - 1]}, ${h.day} de ${meses[h.month - 1]}';
   }
 
+  void _abrirDetalle(BuildContext context, Producto p) {
+    Navigator.of(context).push(
+      CupertinoPageRoute(
+        builder: (_) => DetalleProductoScreen(productoId: p.id),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      drawer: _MenuDrawer(onLogout: () => logout(context)),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            // Encabezado + estadísticas superpuestas
-            Stack(
-              children: [
-                GradientHeader(
-                  height: 270,
-                  child: SafeArea(
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(12, 4, 20, 0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              // Builder: da un context DENTRO del Scaffold
-                              // para poder abrir el Drawer
-                              Builder(
-                                builder: (ctx) => IconButton(
-                                  icon: const Icon(Icons.menu_rounded, color: Colors.white),
-                                  onPressed: () => Scaffold.of(ctx).openDrawer(),
-                                ),
-                              ),
-                              const Text(
-                                'Menú',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 19,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                              const Spacer(),
-                              ValueListenableBuilder<Usuario>(
-                                valueListenable: AppData.usuario,
-                                builder: (_, u, __) => GestureDetector(
-                                  onTap: () => Navigator.pushNamed(context, AppRoutes.perfil),
-                                  child: CircleAvatar(
-                                    radius: 20,
-                                    backgroundColor: Colors.white,
-                                    child: Text(
-                                      u.iniciales,
-                                      style: const TextStyle(
-                                        color: AppColors.primary,
-                                        fontWeight: FontWeight.w800,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 18),
-                          Padding(
-                            padding: const EdgeInsets.only(left: 8),
-                            child: ValueListenableBuilder<Usuario>(
-                              valueListenable: AppData.usuario,
-                              builder: (_, u, __) => Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    _fechaHoy(),
-                                    style: TextStyle(
-                                      color: Colors.white.withValues(alpha: 0.75),
-                                      fontSize: 13,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    'Hola, ${u.nombre.split(' ').first} 👋',
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 28,
-                                      fontWeight: FontWeight.w800,
-                                      letterSpacing: -0.4,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                // Estadísticas que "flotan" sobre el borde del encabezado
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 200, 20, 0),
-                  child: FadeSlideIn(
-                    child: ValueListenableBuilder<List<Producto>>(
-                      valueListenable: AppData.productos,
-                      builder: (_, lista, __) => Row(
-                        children: [
-                          _StatCard(
-                            icono: Icons.inventory_2_rounded,
-                            valor: '${lista.length}',
-                            etiqueta: 'Productos',
-                            color: AppColors.primary,
-                          ),
-                          const SizedBox(width: 12),
-                          _StatCard(
-                            icono: Icons.layers_rounded,
-                            valor: '${AppData.totalUnidades}',
-                            etiqueta: 'Unidades',
-                            color: AppColors.cyan,
-                          ),
-                          const SizedBox(width: 12),
-                          _StatCard(
-                            icono: Icons.payments_rounded,
-                            valor: _compacto(AppData.valorInventario),
-                            etiqueta: 'Inventario',
-                            color: AppColors.success,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
+    return CupertinoPageScaffold(
+      child: ValueListenableBuilder<List<Producto>>(
+        valueListenable: AppData.productos,
+        builder: (context, productos, _) {
+          final bajos = AppData.stockBajo;
+          final destacados = [...productos]..sort((a, b) => b.precio.compareTo(a.precio));
 
-            // Accesos rápidos en cuadrícula
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 28, 20, 24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Accesos rápidos',
-                    style: TextStyle(
-                      fontSize: 19,
-                      fontWeight: FontWeight.w800,
-                      color: AppColors.textDark,
+          return CustomScrollView(
+            slivers: [
+              CupertinoSliverNavigationBar(
+                largeTitle: const Text('Inicio'),
+                middle: const Text('Inicio'),
+                alwaysShowMiddle: false,
+                border: null,
+                backgroundColor: AppColors.background.withValues(alpha: 0.9),
+                trailing: _AvatarBoton(onTap: onVerPerfil),
+              ),
+              SliverToBoxAdapter(child: _Saludo(fecha: fechaHoy())),
+              SliverToBoxAdapter(
+                child: _ResumenCard(
+                  productos: productos.length,
+                  unidades: AppData.totalUnidades,
+                  valor: AppData.valorInventario,
+                  stockBajo: bajos.length,
+                ),
+              ),
+
+              // Accesos a cada pantalla del laboratorio
+              SliverToBoxAdapter(
+                child: CupertinoListSection.insetGrouped(
+                  header: const SectionHeader('Accesos rápidos'),
+                  children: [
+                    CupertinoListTile(
+                      leading: const IconBox(icon: CupertinoIcons.plus, color: AppColors.primary),
+                      title: const Text('Registrar producto'),
+                      subtitle: const Text('Agregar al inventario'),
+                      trailing: const CupertinoListTileChevron(),
+                      onTap: () => AppRoutes.abrir(context, AppRoutes.registrarProducto),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  // (No visto en clase) GridView dentro de un scroll
-                  // necesita shrinkWrap y NeverScrollableScrollPhysics.
-                  GridView.count(
-                    crossAxisCount: 2,
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    mainAxisSpacing: 16,
-                    crossAxisSpacing: 16,
-                    childAspectRatio: 0.95,
+                    CupertinoListTile(
+                      leading: const IconBox(icon: CupertinoIcons.list_bullet, color: AppColors.blue),
+                      title: const Text('Listar productos'),
+                      subtitle: const Text('Buscar, editar y eliminar'),
+                      additionalInfo: Text('${productos.length}'),
+                      trailing: const CupertinoListTileChevron(),
+                      onTap: onVerProductos,
+                    ),
+                    CupertinoListTile(
+                      leading: const IconBox(icon: CupertinoIcons.person_fill, color: AppColors.teal),
+                      title: const Text('Mi perfil'),
+                      subtitle: const Text('Datos de la cuenta'),
+                      trailing: const CupertinoListTileChevron(),
+                      onTap: onVerPerfil,
+                    ),
+                    CupertinoListTile(
+                      leading: const IconBox(
+                        icon: CupertinoIcons.square_arrow_right,
+                        color: AppColors.danger,
+                      ),
+                      title: const Text(
+                        'Cerrar sesión',
+                        style: TextStyle(color: AppColors.danger),
+                      ),
+                      onTap: () => AppRoutes.cerrarSesion(context),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Productos que se están acabando
+              if (bajos.isNotEmpty)
+                SliverToBoxAdapter(
+                  child: CupertinoListSection.insetGrouped(
+                    header: const SectionHeader('Stock bajo'),
+                    footer: const Text('Productos con 8 unidades o menos.'),
                     children: [
-                      FadeSlideIn(
-                        delay: 100,
-                        child: MenuOptionTile(
-                          icon: Icons.add_shopping_cart_rounded,
-                          title: 'Registrar\nProductos',
-                          subtitle: 'Nuevo producto',
-                          gradient: AppColors.gradientIndex(0),
-                          onTap: () => Navigator.pushNamed(context, AppRoutes.registrarProducto),
-                        ),
-                      ),
-                      FadeSlideIn(
-                        delay: 200,
-                        child: MenuOptionTile(
-                          icon: Icons.view_list_rounded,
-                          title: 'Listar\nProductos',
-                          subtitle: 'Ver y editar',
-                          gradient: AppColors.gradientIndex(1),
-                          onTap: () => Navigator.pushNamed(context, AppRoutes.listarProductos),
-                        ),
-                      ),
-                      FadeSlideIn(
-                        delay: 300,
-                        child: MenuOptionTile(
-                          icon: Icons.person_rounded,
-                          title: 'Mi\nPerfil',
-                          subtitle: 'Datos de cuenta',
-                          gradient: AppColors.gradientIndex(3),
-                          onTap: () => Navigator.pushNamed(context, AppRoutes.perfil),
-                        ),
-                      ),
-                      FadeSlideIn(
-                        delay: 400,
-                        child: MenuOptionTile(
-                          icon: Icons.logout_rounded,
-                          title: 'Cerrar\nSesión',
-                          subtitle: 'Logout',
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFFF43F5E), Color(0xFFE11D48)],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
+                      for (final p in bajos.take(4))
+                        CupertinoListTile(
+                          leadingSize: 40,
+                          leading: ProductoImagen(
+                            url: p.imagenUrl,
+                            iconoRespaldo: p.icono,
+                            categoria: p.categoria,
+                            size: 40,
+                            radius: 9,
                           ),
-                          onTap: () => logout(context),
+                          title: Text(p.nombre),
+                          subtitle: Text(p.marca),
+                          additionalInfo: StockBadge(stock: p.stock),
+                          trailing: const CupertinoListTileChevron(),
+                          onTap: () => _abrirDetalle(context, p),
                         ),
-                      ),
                     ],
                   ),
-                  const SizedBox(height: 28),
+                ),
 
-                  // Productos destacados (carrusel)
-                  Row(
+              // Carrusel horizontal con los productos de mayor precio
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 18, 8, 10),
+                  child: Row(
                     children: [
-                      const Text(
-                        'Destacados',
-                        style: TextStyle(
-                          fontSize: 19,
-                          fontWeight: FontWeight.w800,
-                          color: AppColors.textDark,
-                        ),
-                      ),
+                      const Text('Destacados', style: AppText.section),
                       const Spacer(),
-                      TextButton(
-                        onPressed: () =>
-                            Navigator.pushNamed(context, AppRoutes.listarProductos),
-                        child: const Text('Ver todos'),
+                      CupertinoButton(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        onPressed: onVerProductos,
+                        child: const Text('Ver todos', style: TextStyle(fontSize: 15)),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
-                  SizedBox(
-                    height: 228,
-                    child: ValueListenableBuilder<List<Producto>>(
-                      valueListenable: AppData.productos,
-                      builder: (_, lista, __) {
-                        // Los 6 productos de mayor precio
-                        final top = [...lista]..sort((a, b) => b.precio.compareTo(a.precio));
-                        final destacados = top.take(6).toList();
-                        // (No visto en clase) ListView horizontal
-                        // (scrollDirection) para hacer un carrusel.
-                        return ListView.separated(
-                          scrollDirection: Axis.horizontal,
-                          clipBehavior: Clip.none,
-                          itemCount: destacados.length,
-                          separatorBuilder: (_, __) => const SizedBox(width: 14),
-                          itemBuilder: (_, i) => _DestacadoCard(
-                            producto: destacados[i],
-                            onTap: () =>
-                                Navigator.pushNamed(context, AppRoutes.listarProductos),
-                          ),
-                        );
-                      },
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: SizedBox(
+                  height: 224,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    clipBehavior: Clip.none,
+                    itemCount: destacados.length < 6 ? destacados.length : 6,
+                    separatorBuilder: (_, __) => const SizedBox(width: 12),
+                    itemBuilder: (_, i) => _DestacadoCard(
+                      producto: destacados[i],
+                      onTap: () => _abrirDetalle(context, destacados[i]),
                     ),
                   ),
-                ],
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: SizedBox(height: MediaQuery.of(context).padding.bottom + 32),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+/// Avatar con las iniciales del usuario (abre la pestaña Perfil)
+class _AvatarBoton extends StatelessWidget {
+  final VoidCallback onTap;
+  const _AvatarBoton({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<Usuario>(
+      valueListenable: AppData.usuario,
+      builder: (_, u, __) => CupertinoButton(
+        padding: EdgeInsets.zero,
+        onPressed: onTap,
+        child: Container(
+          width: 34,
+          height: 34,
+          alignment: Alignment.center,
+          decoration: const BoxDecoration(
+            gradient: AppColors.brandGradient,
+            shape: BoxShape.circle,
+          ),
+          child: Text(
+            u.iniciales,
+            style: const TextStyle(
+              color: CupertinoColors.white,
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _Saludo extends StatelessWidget {
+  final String fecha;
+  const _Saludo({required this.fecha});
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<Usuario>(
+      valueListenable: AppData.usuario,
+      builder: (_, u, __) => Padding(
+        padding: const EdgeInsets.fromLTRB(20, 2, 20, 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              fecha.toUpperCase(),
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0.6,
+                color: AppColors.secondaryLabel,
               ),
             ),
+            const SizedBox(height: 4),
+            Text('Hola, ${u.nombre.split(' ').first}', style: AppText.title),
           ],
         ),
       ),
     );
   }
+}
 
-  /// 45600 -> "S/ 45.6k"
-  static String _compacto(double v) {
-    if (v >= 1000000) return 'S/ ${(v / 1000000).toStringAsFixed(1)}M';
-    if (v >= 1000) return 'S/ ${(v / 1000).toStringAsFixed(1)}k';
-    return 'S/ ${v.toStringAsFixed(0)}';
+/// Tarjeta oscura con el valor total del inventario
+class _ResumenCard extends StatelessWidget {
+  final int productos;
+  final int unidades;
+  final double valor;
+  final int stockBajo;
+
+  const _ResumenCard({
+    required this.productos,
+    required this.unidades,
+    required this.valor,
+    required this.stockBajo,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final valorTexto = Producto.soles(valor);
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: AppColors.heroGradient,
+        borderRadius: BorderRadius.circular(22),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primaryDark.withValues(alpha: 0.25),
+            blurRadius: 24,
+            offset: const Offset(0, 12),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text(
+                'Valor del inventario',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: CupertinoColors.white.withValues(alpha: 0.7),
+                ),
+              ),
+              const Spacer(),
+              Icon(
+                CupertinoIcons.chart_bar_alt_fill,
+                size: 18,
+                color: CupertinoColors.white.withValues(alpha: 0.7),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              valorTexto,
+              style: const TextStyle(
+                fontSize: 32,
+                fontWeight: FontWeight.w700,
+                letterSpacing: -0.8,
+                color: CupertinoColors.white,
+              ),
+            ),
+          ),
+          const SizedBox(height: 18),
+          Container(height: 0.5, color: CupertinoColors.white.withValues(alpha: 0.2)),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              _Dato(valor: '$productos', etiqueta: 'Productos'),
+              _Dato(valor: '$unidades', etiqueta: 'Unidades'),
+              _Dato(
+                valor: '$stockBajo',
+                etiqueta: 'Stock bajo',
+                color: stockBajo > 0 ? const Color(0xFFFFB340) : null,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _Dato extends StatelessWidget {
+  final String valor;
+  final String etiqueta;
+  final Color? color;
+  const _Dato({required this.valor, required this.etiqueta, this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            valor,
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+              color: color ?? CupertinoColors.white,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            etiqueta,
+            style: TextStyle(
+              fontSize: 12,
+              color: CupertinoColors.white.withValues(alpha: 0.6),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
@@ -342,11 +381,11 @@ class _DestacadoCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 156,
-        padding: const EdgeInsets.all(12),
+        width: 150,
+        padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(22),
+          color: AppColors.card,
+          borderRadius: BorderRadius.circular(18),
           boxShadow: AppColors.softShadow,
         ),
         child: Column(
@@ -356,171 +395,28 @@ class _DestacadoCard extends StatelessWidget {
               url: producto.imagenUrl,
               iconoRespaldo: producto.icono,
               categoria: producto.categoria,
-              size: 132,
-              radius: 16,
+              size: 130,
+              radius: 12,
             ),
             const SizedBox(height: 10),
-            Text(
-              producto.marca,
-              style: const TextStyle(fontSize: 11, color: AppColors.textLight),
-            ),
+            Text(producto.marca, style: AppText.caption),
             Text(
               producto.nombre,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.textDark),
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.label),
             ),
             const SizedBox(height: 2),
             Text(
               producto.precioFormateado,
               style: const TextStyle(
-                fontWeight: FontWeight.w800,
-                color: AppColors.primary,
                 fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: AppColors.primary,
               ),
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-/// Tarjeta pequeña de estadística
-class _StatCard extends StatelessWidget {
-  final IconData icono;
-  final String valor;
-  final String etiqueta;
-  final Color color;
-
-  const _StatCard({
-    required this.icono,
-    required this.valor,
-    required this.etiqueta,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 10),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: AppColors.softShadow,
-        ),
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(icono, color: color, size: 20),
-            ),
-            const SizedBox(height: 10),
-            // (No visto en clase) FittedBox reduce el texto si no
-            // entra en el ancho disponible (evita overflow en pantallas chicas)
-            FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Text(
-                valor,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.textDark,
-                ),
-              ),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              etiqueta,
-              style: const TextStyle(fontSize: 12, color: AppColors.textLight),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// Menú lateral (se abre con el ícono ☰)
-class _MenuDrawer extends StatelessWidget {
-  // Recibimos el logout desde el Menú para usar SU context (el del
-  // drawer deja de existir al cerrarse).
-  final VoidCallback onLogout;
-  const _MenuDrawer({required this.onLogout});
-
-  @override
-  Widget build(BuildContext context) {
-    void ir(String ruta) {
-      Navigator.pop(context); // cierra el drawer
-      Navigator.pushNamed(context, ruta);
-    }
-
-    final u = AppData.usuario.value;
-
-    Widget item(IconData icono, String texto, VoidCallback onTap, {Color? color}) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-        child: ListTile(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          leading: Icon(icono, color: color ?? AppColors.primary),
-          title: Text(
-            texto,
-            style: TextStyle(fontWeight: FontWeight.w600, color: color ?? AppColors.textDark),
-          ),
-          onTap: onTap,
-        ),
-      );
-    }
-
-    return Drawer(
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.horizontal(right: Radius.circular(28)),
-      ),
-      child: Column(
-        children: [
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.fromLTRB(24, 60, 24, 28),
-            decoration: const BoxDecoration(
-              gradient: AppColors.headerGradient,
-              borderRadius: BorderRadius.only(topRight: Radius.circular(28)),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                CircleAvatar(
-                  radius: 32,
-                  backgroundColor: Colors.white,
-                  child: Text(u.iniciales,
-                      style: const TextStyle(
-                          fontSize: 22, fontWeight: FontWeight.w800, color: AppColors.primary)),
-                ),
-                const SizedBox(height: 14),
-                Text(u.nombre,
-                    style: const TextStyle(
-                        color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700)),
-                Text(u.email, style: TextStyle(color: Colors.white.withValues(alpha: 0.8))),
-              ],
-            ),
-          ),
-          const SizedBox(height: 12),
-          item(Icons.add_shopping_cart_rounded, 'Registrar Productos',
-              () => ir(AppRoutes.registrarProducto)),
-          item(Icons.view_list_rounded, 'Listar Productos', () => ir(AppRoutes.listarProductos)),
-          item(Icons.person_rounded, 'Perfil', () => ir(AppRoutes.perfil)),
-          const Spacer(),
-          const Divider(indent: 24, endIndent: 24),
-          item(Icons.logout_rounded, 'Logout', () {
-            Navigator.pop(context);
-            onLogout();
-          }, color: AppColors.danger),
-          const SizedBox(height: 20),
-        ],
       ),
     );
   }

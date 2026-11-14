@@ -1,15 +1,27 @@
-// PANTALLA 3: LISTAR PRODUCTOS
-// Buscador, filtro por categoría, editar, eliminar (con deshacer)
-// y botón "+" para registrar.
-import 'package:flutter/material.dart';
+// PANTALLA 3: LISTAR PRODUCTOS (pestaña Productos)
+// Título grande, buscador, filtros, orden, deslizar para eliminar
+// y "jalar para actualizar" al estilo iOS.
+import 'package:flutter/cupertino.dart';
 
 import '../data/app_data.dart';
 import '../models/producto.dart';
 import '../routes/app_routes.dart';
 import '../theme/app_theme.dart';
-import '../widgets/decorations.dart';
-import '../widgets/producto_card.dart';
-import '../widgets/producto_imagen.dart';
+import '../widgets/app_toast.dart';
+import '../widgets/producto_tile.dart';
+import 'detalle_producto_screen.dart';
+
+/// Formas de ordenar la lista
+enum Orden { nombre, precioMayor, precioMenor, stock }
+
+extension on Orden {
+  String get texto => switch (this) {
+        Orden.nombre => 'Nombre (A-Z)',
+        Orden.precioMayor => 'Precio: mayor a menor',
+        Orden.precioMenor => 'Precio: menor a mayor',
+        Orden.stock => 'Menos stock primero',
+      };
+}
 
 class ListarProductosScreen extends StatefulWidget {
   const ListarProductosScreen({super.key});
@@ -20,8 +32,10 @@ class ListarProductosScreen extends StatefulWidget {
 
 class _ListarProductosScreenState extends State<ListarProductosScreen> {
   final _buscarCtrl = TextEditingController();
-  String _filtro = '';
-  String _categoria = 'Todos';
+  String _busqueda = '';
+  String _categoria = 'Todas';
+  int _filtroStock = 0; // 0 = todos, 1 = disponibles, 2 = stock bajo
+  Orden _orden = Orden.nombre;
 
   @override
   void dispose() {
@@ -29,103 +43,102 @@ class _ListarProductosScreenState extends State<ListarProductosScreen> {
     super.dispose();
   }
 
-  void _irARegistrar([Producto? producto]) {
-    // Si se manda un producto, la pantalla se abre en modo EDITAR
-    Navigator.pushNamed(context, AppRoutes.registrarProducto, arguments: producto);
+  List<Producto> _filtrar(List<Producto> todos) {
+    final q = _busqueda.trim().toLowerCase();
+    final lista = todos.where((p) {
+      final coincide = q.isEmpty ||
+          p.nombre.toLowerCase().contains(q) ||
+          p.marca.toLowerCase().contains(q);
+      final enCategoria = _categoria == 'Todas' || p.categoria == _categoria;
+      final enStock = switch (_filtroStock) {
+        1 => p.stock > 8,
+        2 => p.stock <= 8,
+        _ => true,
+      };
+      return coincide && enCategoria && enStock;
+    }).toList();
+
+    switch (_orden) {
+      case Orden.nombre:
+        lista.sort((a, b) => a.nombre.toLowerCase().compareTo(b.nombre.toLowerCase()));
+      case Orden.precioMayor:
+        lista.sort((a, b) => b.precio.compareTo(a.precio));
+      case Orden.precioMenor:
+        lista.sort((a, b) => a.precio.compareTo(b.precio));
+      case Orden.stock:
+        lista.sort((a, b) => a.stock.compareTo(b.stock));
+    }
+    return lista;
   }
 
-  void _eliminar(Producto p) {
-    AppData.eliminarProducto(p.id);
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: Text('"${p.nombre}" eliminado'),
-          // (No visto en clase) SnackBarAction permite DESHACER
-          action: SnackBarAction(
-            label: 'DESHACER',
-            textColor: const Color(0xFFA5B4FC),
-            onPressed: () => AppData.agregarProducto(p),
-          ),
-        ),
-      );
-  }
-
-  void _verDetalle(Producto p) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+  void _abrirDetalle(Producto p) {
+    Navigator.of(context).push(
+      CupertinoPageRoute(
+        builder: (_) => DetalleProductoScreen(productoId: p.id),
       ),
-      builder: (ctx) => Padding(
-        padding: const EdgeInsets.fromLTRB(24, 14, 24, 32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 44,
-              height: 5,
-              decoration: BoxDecoration(
-                color: AppColors.border,
-                borderRadius: BorderRadius.circular(4),
-              ),
+    );
+  }
+
+  /// Hoja de acciones al tocar los "..." de un producto
+  void _opciones(Producto p) {
+    showCupertinoModalPopup<void>(
+      context: context,
+      builder: (ctx) => CupertinoActionSheet(
+        title: Text(p.nombre),
+        message: Text('${p.marca} · ${p.precioFormateado} · ${p.stock} uds.'),
+        actions: [
+          CupertinoActionSheetAction(
+            onPressed: () {
+              Navigator.pop(ctx);
+              _abrirDetalle(p);
+            },
+            child: const Text('Ver detalle'),
+          ),
+          CupertinoActionSheetAction(
+            onPressed: () {
+              Navigator.pop(ctx);
+              AppRoutes.abrir(context, AppRoutes.registrarProducto, arguments: p);
+            },
+            child: const Text('Editar'),
+          ),
+          CupertinoActionSheetAction(
+            isDestructiveAction: true,
+            onPressed: () {
+              Navigator.pop(ctx);
+              DetalleProductoScreen.confirmarEliminar(context, p);
+            },
+            child: const Text('Eliminar'),
+          ),
+        ],
+        cancelButton: CupertinoActionSheetAction(
+          isDefaultAction: true,
+          onPressed: () => Navigator.pop(ctx),
+          child: const Text('Cancelar'),
+        ),
+      ),
+    );
+  }
+
+  /// Hoja de acciones para elegir el orden
+  void _elegirOrden() {
+    showCupertinoModalPopup<void>(
+      context: context,
+      builder: (ctx) => CupertinoActionSheet(
+        title: const Text('Ordenar productos'),
+        actions: [
+          for (final o in Orden.values)
+            CupertinoActionSheetAction(
+              isDefaultAction: o == _orden,
+              onPressed: () {
+                setState(() => _orden = o);
+                Navigator.pop(ctx);
+              },
+              child: Text(o == _orden ? '✓  ${o.texto}' : o.texto),
             ),
-            const SizedBox(height: 24),
-            Hero(
-              tag: 'producto-${p.id}',
-              child: ProductoImagen(
-                url: p.imagenUrl,
-                iconoRespaldo: p.icono,
-                categoria: p.categoria,
-                size: 170,
-                radius: 32,
-              ),
-            ),
-            const SizedBox(height: 18),
-            if (p.marca.isNotEmpty)
-              Text(p.marca.toUpperCase(),
-                  style: const TextStyle(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 1.2,
-                      fontSize: 12)),
-            Text(p.nombre,
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800)),
-            const SizedBox(height: 6),
-            Text(
-              p.descripcion.isEmpty ? 'Sin descripción' : p.descripcion,
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: AppColors.textLight, height: 1.4),
-            ),
-            const SizedBox(height: 20),
-            Row(
-              children: [
-                _Dato(icono: Icons.sell_rounded, titulo: 'Precio', valor: p.precioFormateado),
-                const SizedBox(width: 12),
-                _Dato(icono: Icons.inventory_rounded, titulo: 'Stock', valor: '${p.stock} und.'),
-              ],
-            ),
-            const SizedBox(height: 22),
-            SizedBox(
-              width: double.infinity,
-              height: 52,
-              child: FilledButton.icon(
-                style: FilledButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                ),
-                icon: const Icon(Icons.edit_rounded),
-                label: const Text('Editar producto',
-                    style: TextStyle(fontWeight: FontWeight.w700)),
-                onPressed: () {
-                  Navigator.pop(ctx);
-                  _irARegistrar(p);
-                },
-              ),
-            ),
-          ],
+        ],
+        cancelButton: CupertinoActionSheetAction(
+          onPressed: () => Navigator.pop(ctx),
+          child: const Text('Cancelar'),
         ),
       ),
     );
@@ -133,168 +146,151 @@ class _ListarProductosScreenState extends State<ListarProductosScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      // (No visto en clase) ValueListenableBuilder redibuja la
-      // pantalla sola cuando se agrega/edita/elimina un producto.
-      body: ValueListenableBuilder<List<Producto>>(
+    final categorias = ['Todas', ...AppData.categorias.keys];
+
+    return CupertinoPageScaffold(
+      child: ValueListenableBuilder<List<Producto>>(
         valueListenable: AppData.productos,
-        builder: (_, productos, __) {
-          // Categorías existentes para los chips de filtro
-          final categorias = ['Todos', ...{for (final p in productos) p.categoria}];
-          if (!categorias.contains(_categoria)) _categoria = 'Todos';
+        builder: (context, todos, _) {
+          final lista = _filtrar(todos);
 
-          final lista = productos.where((p) {
-            final coincideTexto = p.nombre.toLowerCase().contains(_filtro) ||
-                p.marca.toLowerCase().contains(_filtro);
-            final coincideCat = _categoria == 'Todos' || p.categoria == _categoria;
-            return coincideTexto && coincideCat;
-          }).toList();
-
-          // (No visto en clase) CustomScrollView + Slivers permite
-          // un AppBar que se encoge al hacer scroll (SliverAppBar).
           return CustomScrollView(
+            physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
             slivers: [
-              SliverAppBar(
-                pinned: true,
-                expandedHeight: 190,
-                backgroundColor: AppColors.primary,
-                title: const Text('Productos'),
-                actions: [
-                  IconButton(
-                    tooltip: 'Registrar producto',
-                    icon: const Icon(Icons.add_circle_outline_rounded, size: 28),
-                    onPressed: _irARegistrar,
-                  ),
-                  const SizedBox(width: 4),
-                ],
-                flexibleSpace: FlexibleSpaceBar(
-                  background: Container(
-                    decoration: const BoxDecoration(gradient: AppColors.headerGradient),
-                    alignment: Alignment.topLeft,
-                    // Debajo del título: alto de barra de estado + toolbar
-                    padding: EdgeInsets.fromLTRB(
-                        24, MediaQuery.of(context).padding.top + 58, 24, 0),
-                    child: Text(
-                      '${productos.length} productos · ${AppData.totalUnidades} unidades',
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.85),
-                        fontSize: 14,
-                      ),
-                    ),
-                  ),
+              CupertinoSliverNavigationBar(
+                largeTitle: const Text('Productos'),
+                middle: const Text('Productos'),
+                alwaysShowMiddle: false,
+                backgroundColor: AppColors.background.withValues(alpha: 0.9),
+                border: null,
+                leading: CupertinoButton(
+                  padding: EdgeInsets.zero,
+                  onPressed: _elegirOrden,
+                  child: const Icon(CupertinoIcons.arrow_up_arrow_down, size: 22),
                 ),
-                // Buscador fijo debajo del título
-                bottom: PreferredSize(
-                  preferredSize: const Size.fromHeight(72),
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
-                    child: TextField(
-                      controller: _buscarCtrl,
-                      onChanged: (v) => setState(() => _filtro = v.toLowerCase()),
-                      decoration: InputDecoration(
-                        fillColor: Colors.white,
-                        hintText: 'Buscar producto o marca...',
-                        prefixIcon: const Icon(Icons.search_rounded, color: AppColors.primary),
-                        contentPadding: const EdgeInsets.symmetric(vertical: 14),
-                        suffixIcon: _filtro.isEmpty
-                            ? null
-                            : IconButton(
-                                icon: const Icon(Icons.close_rounded),
-                                onPressed: () {
-                                  _buscarCtrl.clear();
-                                  setState(() => _filtro = '');
-                                },
-                              ),
+                trailing: CupertinoButton(
+                  padding: EdgeInsets.zero,
+                  onPressed: () => AppRoutes.abrir(context, AppRoutes.registrarProducto),
+                  child: const Icon(CupertinoIcons.plus_circle_fill, size: 28),
+                ),
+              ),
+
+              // Jalar hacia abajo para actualizar
+              CupertinoSliverRefreshControl(
+                onRefresh: () async {
+                  await Future.delayed(const Duration(milliseconds: 900));
+                  if (context.mounted) AppToast.show(context, 'Inventario actualizado');
+                },
+              ),
+
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(left: 4, bottom: 10),
+                        child: Text(
+                          '${todos.length} productos · ${AppData.totalUnidades} unidades',
+                          style: AppText.subhead,
+                        ),
                       ),
-                    ),
+                      CupertinoSearchTextField(
+                        controller: _buscarCtrl,
+                        placeholder: 'Buscar por nombre o marca',
+                        onChanged: (v) => setState(() => _busqueda = v),
+                      ),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        width: double.infinity,
+                        child: CupertinoSlidingSegmentedControl<int>(
+                          groupValue: _filtroStock,
+                          onValueChanged: (v) => setState(() => _filtroStock = v ?? 0),
+                          children: const {
+                            0: Text('Todos'),
+                            1: Text('Disponibles'),
+                            2: Text('Stock bajo'),
+                          },
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
 
-              // Chips de categoría
+              // Categorías en "píldoras" horizontales
               SliverToBoxAdapter(
                 child: SizedBox(
-                  height: 62,
+                  height: 52,
                   child: ListView.separated(
                     scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.fromLTRB(16, 14, 16, 6),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                     itemCount: categorias.length,
                     separatorBuilder: (_, __) => const SizedBox(width: 8),
-                    itemBuilder: (_, i) {
-                      final cat = categorias[i];
-                      final activo = cat == _categoria;
-                      return ChoiceChip(
-                        label: Text(cat),
-                        selected: activo,
-                        showCheckmark: false,
-                        onSelected: (_) => setState(() => _categoria = cat),
-                        selectedColor: AppColors.primary,
-                        backgroundColor: Colors.white,
-                        side: BorderSide(
-                          color: activo ? AppColors.primary : AppColors.border,
-                        ),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                        labelStyle: TextStyle(
-                          color: activo ? Colors.white : AppColors.textDark,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      );
-                    },
+                    itemBuilder: (_, i) => _Pildora(
+                      texto: categorias[i],
+                      activa: categorias[i] == _categoria,
+                      onTap: () => setState(() => _categoria = categorias[i]),
+                    ),
                   ),
                 ),
               ),
 
-              // Lista o estado vacío
               if (lista.isEmpty)
                 SliverFillRemaining(
                   hasScrollBody: false,
                   child: _ListaVacia(
-                    buscando: _filtro.isNotEmpty || _categoria != 'Todos',
-                    onAgregar: _irARegistrar,
+                    hayFiltros: todos.isNotEmpty,
+                    onRegistrar: () => AppRoutes.abrir(context, AppRoutes.registrarProducto),
                   ),
                 )
               else
                 SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
-                  sliver: SliverList.builder(
+                  padding: EdgeInsets.fromLTRB(
+                    16,
+                    4,
+                    16,
+                    MediaQuery.of(context).padding.bottom + 24,
+                  ),
+                  sliver: SliverList.separated(
                     itemCount: lista.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 10),
                     itemBuilder: (_, i) {
                       final p = lista[i];
-                      // (No visto en clase) Dismissible elimina
-                      // deslizando la tarjeta hacia la izquierda.
-                      return FadeSlideIn(
-                        delay: i * 80,
-                        child: Dismissible(
-                          key: ValueKey(p.id),
-                          direction: DismissDirection.endToStart,
-                          background: Container(
-                            margin: const EdgeInsets.only(bottom: 14),
-                            alignment: Alignment.centerRight,
-                            padding: const EdgeInsets.only(right: 28),
-                            decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                colors: [Color(0xFFFCA5A5), AppColors.danger],
+                      // Deslizar hacia la izquierda para eliminar
+                      return Dismissible(
+                        key: ValueKey(p.id),
+                        direction: DismissDirection.endToStart,
+                        confirmDismiss: (_) => DetalleProductoScreen.preguntarEliminar(context, p),
+                        onDismissed: (_) => DetalleProductoScreen.eliminar(context, p),
+                        background: Container(
+                          alignment: Alignment.centerRight,
+                          padding: const EdgeInsets.only(right: 24),
+                          decoration: BoxDecoration(
+                            color: AppColors.danger,
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: const Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(CupertinoIcons.trash, color: CupertinoColors.white),
+                              SizedBox(height: 2),
+                              Text(
+                                'Eliminar',
+                                style: TextStyle(
+                                  color: CupertinoColors.white,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
-                              borderRadius: BorderRadius.circular(22),
-                            ),
-                            child: const Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                Text('Eliminar',
-                                    style: TextStyle(
-                                        color: Colors.white, fontWeight: FontWeight.w700)),
-                                SizedBox(width: 8),
-                                Icon(Icons.delete_rounded, color: Colors.white),
-                              ],
-                            ),
+                            ],
                           ),
-                          onDismissed: (_) => _eliminar(p),
-                          child: ProductoCard(
-                            producto: p,
-                            onTap: () => _verDetalle(p),
-                            onEditar: () => _irARegistrar(p),
-                            onEliminar: () => _eliminar(p),
-                          ),
+                        ),
+                        child: ProductoTile(
+                          producto: p,
+                          onTap: () => _abrirDetalle(p),
+                          onMas: () => _opciones(p),
                         ),
                       );
                     },
@@ -304,67 +300,37 @@ class _ListarProductosScreenState extends State<ListarProductosScreen> {
           );
         },
       ),
-      floatingActionButton: DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: AppColors.buttonGradient,
-          borderRadius: BorderRadius.circular(18),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.primary.withValues(alpha: 0.4),
-              blurRadius: 16,
-              offset: const Offset(0, 8),
-            ),
-          ],
-        ),
-        child: FloatingActionButton.extended(
-          onPressed: _irARegistrar,
-          backgroundColor: Colors.transparent,
-          foregroundColor: Colors.white,
-          elevation: 0,
-          highlightElevation: 0,
-          icon: const Icon(Icons.add_rounded),
-          label: const Text('Nuevo', style: TextStyle(fontWeight: FontWeight.w700)),
-        ),
-      ),
     );
   }
 }
 
-class _Dato extends StatelessWidget {
-  final IconData icono;
-  final String titulo;
-  final String valor;
-  const _Dato({required this.icono, required this.titulo, required this.valor});
+class _Pildora extends StatelessWidget {
+  final String texto;
+  final bool activa;
+  final VoidCallback onTap;
+
+  const _Pildora({required this.texto, required this.activa, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(14),
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: AppColors.inputFill,
-          borderRadius: BorderRadius.circular(18),
+          color: activa ? AppColors.label : AppColors.card,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: activa ? AppColors.label : AppColors.separator),
         ),
-        child: Row(
-          children: [
-            Icon(icono, color: AppColors.primary),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(titulo,
-                      style: const TextStyle(color: AppColors.textLight, fontSize: 12)),
-                  FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerLeft,
-                    child: Text(valor,
-                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
-                  ),
-                ],
-              ),
-            ),
-          ],
+        child: Text(
+          texto,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: activa ? CupertinoColors.white : AppColors.label,
+          ),
         ),
       ),
     );
@@ -372,9 +338,10 @@ class _Dato extends StatelessWidget {
 }
 
 class _ListaVacia extends StatelessWidget {
-  final bool buscando;
-  final VoidCallback onAgregar;
-  const _ListaVacia({required this.buscando, required this.onAgregar});
+  final bool hayFiltros;
+  final VoidCallback onRegistrar;
+
+  const _ListaVacia({required this.hayFiltros, required this.onRegistrar});
 
   @override
   Widget build(BuildContext context) {
@@ -383,34 +350,30 @@ class _ListaVacia extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Container(
-            padding: const EdgeInsets.all(26),
-            decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.08),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              buscando ? Icons.search_off_rounded : Icons.inventory_2_outlined,
-              size: 56,
-              color: AppColors.primary,
-            ),
+          Icon(
+            hayFiltros ? CupertinoIcons.search : CupertinoIcons.tray_fill,
+            size: 52,
+            color: AppColors.tertiaryLabel,
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 14),
           Text(
-            buscando ? 'No se encontraron productos' : 'Aún no hay productos',
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+            hayFiltros ? 'Sin resultados' : 'Aún no hay productos',
+            style: AppText.headline,
           ),
           const SizedBox(height: 6),
           Text(
-            buscando ? 'Prueba con otro nombre o categoría' : 'Registra tu primer producto',
-            style: const TextStyle(color: AppColors.textLight),
+            hayFiltros
+                ? 'Prueba con otra búsqueda o cambia los filtros.'
+                : 'Registra tu primer producto para empezar.',
+            textAlign: TextAlign.center,
+            style: AppText.subhead,
           ),
-          if (!buscando) ...[
-            const SizedBox(height: 20),
-            FilledButton.icon(
-              onPressed: onAgregar,
-              icon: const Icon(Icons.add),
-              label: const Text('Registrar producto'),
+          if (!hayFiltros) ...[
+            const SizedBox(height: 18),
+            CupertinoButton.filled(
+              borderRadius: BorderRadius.circular(14),
+              onPressed: onRegistrar,
+              child: const Text('Registrar producto'),
             ),
           ],
         ],
