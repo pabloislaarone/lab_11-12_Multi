@@ -18,9 +18,11 @@ class AppRoutes {
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
       case login:
-        return CupertinoPageRoute(settings: settings, builder: (_) => const LoginScreen());
+        return CupertinoPageRoute(
+            settings: settings, builder: (_) => const LoginScreen());
       case home:
-        return CupertinoPageRoute(settings: settings, builder: (_) => const HomeScreen());
+        return CupertinoPageRoute(
+            settings: settings, builder: (_) => const HomeScreen());
       case registrarProducto:
         // La misma pantalla registra o edita: si llega un Producto, edita.
         // fullscreenDialog: se abre desde abajo como un formulario modal de iOS.
@@ -47,8 +49,10 @@ class AppRoutes {
   }
 
   /// Abre una ruta en el navegador principal (por encima de las pestañas)
-  static Future<T?> abrir<T>(BuildContext context, String ruta, {Object? arguments}) {
-    return Navigator.of(context, rootNavigator: true).pushNamed<T>(ruta, arguments: arguments);
+  static Future<T?> abrir<T>(BuildContext context, String ruta,
+      {Object? arguments}) {
+    return Navigator.of(context, rootNavigator: true)
+        .pushNamed<T>(ruta, arguments: arguments);
   }
 
   /// Pide confirmación y vuelve al login borrando el historial

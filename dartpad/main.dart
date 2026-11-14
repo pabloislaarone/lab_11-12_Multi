@@ -30,66 +30,93 @@ class TechStoreApp extends StatelessWidget {
 
 // ===== lib/theme/app_theme.dart =====
 // Colores, estilos de texto y tema Cupertino de toda la app.
-// Se usa la paleta del sistema de iOS para que la app se sienta nativa.
+// Paleta fría: azul marino, azul, cian y turquesa.
 
 class AppColors {
   AppColors._();
 
-  // Color de marca (índigo de iOS)
-  static const Color primary = Color(0xFF5856D6);
-  static const Color primaryDark = Color(0xFF3634A3);
+  // Marca
+  static const Color navy = Color(0xFF0B1E3A);
+  static const Color navyLight = Color(0xFF173F73);
+  static const Color primary = Color(0xFF2563EB); // azul
+  static const Color cyan = Color(0xFF06B6D4);
+  static const Color teal = Color(0xFF0D9488);
+  static const Color sky = Color(0xFF0EA5E9);
+  static const Color indigo = Color(0xFF4F46E5);
+  static const Color violet = Color(0xFF7C3AED);
+  static const Color slate = Color(0xFF64748B);
 
-  // Fondos estilo "Ajustes" de iOS
-  static const Color background = Color(0xFFF2F2F7); // systemGroupedBackground
+  // Fondos
+  static const Color background = Color(0xFFEAF0F7);
   static const Color card = Color(0xFFFFFFFF);
-  static const Color fill = Color(0xFFEFEFF4);
-  static const Color separator = Color(0xFFE5E5EA);
+  static const Color fill = Color(0xFFE3ECF6);
+  static const Color separator = Color(0xFFD9E2EE);
 
   // Texto
-  static const Color label = Color(0xFF1C1C1E);
-  static const Color secondaryLabel = Color(0xFF6E6E73);
-  static const Color tertiaryLabel = Color(0xFFAEAEB2);
+  static const Color label = Color(0xFF0F172A);
+  static const Color secondaryLabel = Color(0xFF5B6B80);
+  static const Color tertiaryLabel = Color(0xFF9AA8BA);
 
   // Estados
-  static const Color success = Color(0xFF34C759);
-  static const Color warning = Color(0xFFFF9500);
-  static const Color danger = Color(0xFFFF3B30);
-  static const Color blue = Color(0xFF007AFF);
-  static const Color teal = Color(0xFF30B0C7);
-  static const Color pink = Color(0xFFFF2D55);
-  static const Color grey = Color(0xFF8E8E93);
+  static const Color success = Color(0xFF10B981);
+  static const Color warning = Color(0xFFF59E0B);
+  static const Color danger = Color(0xFFEF4444);
 
-  /// Tarjeta oscura del resumen del inventario
-  static const LinearGradient heroGradient = LinearGradient(
-    colors: [Color(0xFF1C1C2E), Color(0xFF34336B)],
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
+  /// Encabezados de cada pantalla
+  static const LinearGradient headerGradient = LinearGradient(
+    colors: [navy, navyLight, Color(0xFF0E6A86)],
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
   );
 
-  /// Ícono de la app en el login
+  /// Ícono de la app, avatar y botones principales
   static const LinearGradient brandGradient = LinearGradient(
-    colors: [Color(0xFF7D7AFF), Color(0xFF5856D6)],
+    colors: [cyan, primary],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
-  /// Color de cada categoría (para íconos y etiquetas)
+  /// Degradados de los accesos rápidos del menú
+  static const List<LinearGradient> accesos = [
+    LinearGradient(
+      colors: [Color(0xFF3B82F6), Color(0xFF1D4ED8)],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    ),
+    LinearGradient(
+      colors: [Color(0xFF22D3EE), Color(0xFF0891B2)],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    ),
+    LinearGradient(
+      colors: [Color(0xFF2DD4BF), Color(0xFF0F766E)],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    ),
+    LinearGradient(
+      colors: [Color(0xFF475569), Color(0xFF1E293B)],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    ),
+  ];
+
+  /// Color de cada categoría (íconos y etiquetas)
   static Color categoria(String categoria) {
     switch (categoria) {
       case 'Laptops':
-        return primary;
+        return indigo;
       case 'Celulares':
-        return blue;
+        return primary;
       case 'Tablets':
-        return teal;
+        return const Color(0xFF0891B2);
       case 'Audio':
-        return pink;
+        return violet;
       case 'Wearables':
-        return warning;
+        return teal;
       case 'Accesorios':
-        return success;
+        return sky;
       default:
-        return grey;
+        return slate;
     }
   }
 
@@ -102,7 +129,7 @@ class AppColors {
 
   static List<BoxShadow> get softShadow => [
         BoxShadow(
-          color: const Color(0xFF000000).withValues(alpha: 0.05),
+          color: navy.withValues(alpha: 0.07),
           blurRadius: 18,
           offset: const Offset(0, 6),
         ),
@@ -156,6 +183,20 @@ class AppText {
     letterSpacing: -0.1,
     color: AppColors.label,
   );
+
+  /// Textos blancos sobre los encabezados oscuros
+  static const TextStyle navLarge = TextStyle(
+    fontSize: 32,
+    fontWeight: FontWeight.w700,
+    letterSpacing: -0.2,
+    color: CupertinoColors.white,
+  );
+
+  static const TextStyle navTitle = TextStyle(
+    fontSize: 17,
+    fontWeight: FontWeight.w600,
+    color: CupertinoColors.white,
+  );
 }
 
 class AppTheme {
@@ -165,11 +206,12 @@ class AppTheme {
     brightness: Brightness.light,
     primaryColor: AppColors.primary,
     scaffoldBackgroundColor: AppColors.background,
-    barBackgroundColor: Color(0xF0F9F9F9),
+    barBackgroundColor: AppColors.navy,
     textTheme: CupertinoTextThemeData(
       primaryColor: AppColors.primary,
       textStyle: AppText.body,
-      navLargeTitleTextStyle: AppText.largeTitle,
+      navLargeTitleTextStyle: AppText.navLarge,
+      navTitleTextStyle: AppText.navTitle,
     ),
   );
 }
@@ -189,9 +231,11 @@ class AppRoutes {
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
       case login:
-        return CupertinoPageRoute(settings: settings, builder: (_) => const LoginScreen());
+        return CupertinoPageRoute(
+            settings: settings, builder: (_) => const LoginScreen());
       case home:
-        return CupertinoPageRoute(settings: settings, builder: (_) => const HomeScreen());
+        return CupertinoPageRoute(
+            settings: settings, builder: (_) => const HomeScreen());
       case registrarProducto:
         // La misma pantalla registra o edita: si llega un Producto, edita.
         // fullscreenDialog: se abre desde abajo como un formulario modal de iOS.
@@ -218,8 +262,10 @@ class AppRoutes {
   }
 
   /// Abre una ruta en el navegador principal (por encima de las pestañas)
-  static Future<T?> abrir<T>(BuildContext context, String ruta, {Object? arguments}) {
-    return Navigator.of(context, rootNavigator: true).pushNamed<T>(ruta, arguments: arguments);
+  static Future<T?> abrir<T>(BuildContext context, String ruta,
+      {Object? arguments}) {
+    return Navigator.of(context, rootNavigator: true)
+        .pushNamed<T>(ruta, arguments: arguments);
   }
 
   /// Pide confirmación y vuelve al login borrando el historial
@@ -345,7 +391,8 @@ class Usuario {
     return (partes[0][0] + partes[1][0]).toUpperCase();
   }
 
-  Usuario copyWith({String? nombre, String? email, String? telefono, String? rol}) {
+  Usuario copyWith(
+      {String? nombre, String? email, String? telefono, String? rol}) {
     return Usuario(
       nombre: nombre ?? this.nombre,
       email: email ?? this.email,
@@ -412,10 +459,12 @@ class AppData {
       nombre: 'MacBook Pro 14"',
       marca: 'Apple',
       categoria: 'Laptops',
-      descripcion: 'Chip M1 Pro, pantalla Liquid Retina XDR de 14", 16 GB RAM y 512 GB SSD. Color gris espacial.',
+      descripcion:
+          'Chip M1 Pro, pantalla Liquid Retina XDR de 14", 16 GB RAM y 512 GB SSD. Color gris espacial.',
       precio: 7499,
       stock: 24,
-      imagenUrl: '$_cdn/laptops/apple-macbook-pro-14-inch-space-grey/thumbnail.webp',
+      imagenUrl:
+          '$_cdn/laptops/apple-macbook-pro-14-inch-space-grey/thumbnail.webp',
       icono: CupertinoIcons.device_laptop,
     ),
     const Producto(
@@ -423,7 +472,8 @@ class AppData {
       nombre: 'XPS 13 9300',
       marca: 'Dell',
       categoria: 'Laptops',
-      descripcion: 'Ultrabook de 13.4" con bordes mínimos, Intel Core i7 y 16 GB RAM. Ideal para llevar a clases.',
+      descripcion:
+          'Ultrabook de 13.4" con bordes mínimos, Intel Core i7 y 16 GB RAM. Ideal para llevar a clases.',
       precio: 5599,
       stock: 9,
       imagenUrl: '$_cdn/laptops/new-dell-xps-13-9300-laptop/thumbnail.webp',
@@ -434,7 +484,8 @@ class AppData {
       nombre: 'Yoga 920',
       marca: 'Lenovo',
       categoria: 'Laptops',
-      descripcion: 'Convertible 2 en 1 con bisagra de 360°: úsala como laptop o como tablet táctil.',
+      descripcion:
+          'Convertible 2 en 1 con bisagra de 360°: úsala como laptop o como tablet táctil.',
       precio: 4099,
       stock: 40,
       imagenUrl: '$_cdn/laptops/lenovo-yoga-920/thumbnail.webp',
@@ -445,10 +496,12 @@ class AppData {
       nombre: 'Zenbook Pro Duo',
       marca: 'Asus',
       categoria: 'Laptops',
-      descripcion: 'Laptop de doble pantalla para diseño, edición de video y multitarea intensa.',
+      descripcion:
+          'Laptop de doble pantalla para diseño, edición de video y multitarea intensa.',
       precio: 6699,
       stock: 6,
-      imagenUrl: '$_cdn/laptops/asus-zenbook-pro-dual-screen-laptop/thumbnail.webp',
+      imagenUrl:
+          '$_cdn/laptops/asus-zenbook-pro-dual-screen-laptop/thumbnail.webp',
       icono: CupertinoIcons.device_laptop,
     ),
     const Producto(
@@ -456,7 +509,8 @@ class AppData {
       nombre: 'iPhone 13 Pro',
       marca: 'Apple',
       categoria: 'Celulares',
-      descripcion: 'Triple cámara de 12 MP, chip A15 Bionic y pantalla ProMotion de 120 Hz.',
+      descripcion:
+          'Triple cámara de 12 MP, chip A15 Bionic y pantalla ProMotion de 120 Hz.',
       precio: 4099,
       stock: 18,
       imagenUrl: '$_cdn/smartphones/iphone-13-pro/thumbnail.webp',
@@ -467,7 +521,8 @@ class AppData {
       nombre: 'Galaxy S10',
       marca: 'Samsung',
       categoria: 'Celulares',
-      descripcion: 'Pantalla Dynamic AMOLED de 6.1", triple cámara y lector de huella en pantalla.',
+      descripcion:
+          'Pantalla Dynamic AMOLED de 6.1", triple cámara y lector de huella en pantalla.',
       precio: 2599,
       stock: 19,
       imagenUrl: '$_cdn/smartphones/samsung-galaxy-s10/thumbnail.webp',
@@ -478,7 +533,8 @@ class AppData {
       nombre: 'iPad Mini 2021',
       marca: 'Apple',
       categoria: 'Tablets',
-      descripcion: 'Tablet compacta de 8.3" con chip A15, compatible con Apple Pencil. Color blanco estelar.',
+      descripcion:
+          'Tablet compacta de 8.3" con chip A15, compatible con Apple Pencil. Color blanco estelar.',
       precio: 1899,
       stock: 47,
       imagenUrl: '$_cdn/tablets/ipad-mini-2021-starlight/thumbnail.webp',
@@ -489,7 +545,8 @@ class AppData {
       nombre: 'Galaxy Tab S8+',
       marca: 'Samsung',
       categoria: 'Tablets',
-      descripcion: 'Pantalla Super AMOLED de 12.4" con S Pen incluido, ideal para tomar apuntes.',
+      descripcion:
+          'Pantalla Super AMOLED de 12.4" con S Pen incluido, ideal para tomar apuntes.',
       precio: 2249,
       stock: 12,
       imagenUrl: '$_cdn/tablets/samsung-galaxy-tab-s8-plus-grey/thumbnail.webp',
@@ -500,7 +557,8 @@ class AppData {
       nombre: 'AirPods',
       marca: 'Apple',
       categoria: 'Audio',
-      descripcion: 'Audífonos inalámbricos con emparejamiento instantáneo y estuche de carga.',
+      descripcion:
+          'Audífonos inalámbricos con emparejamiento instantáneo y estuche de carga.',
       precio: 489,
       stock: 35,
       imagenUrl: '$_cdn/mobile-accessories/apple-airpods/thumbnail.webp',
@@ -511,10 +569,12 @@ class AppData {
       nombre: 'AirPods Max',
       marca: 'Apple',
       categoria: 'Audio',
-      descripcion: 'Audífonos over-ear con cancelación activa de ruido y audio espacial.',
+      descripcion:
+          'Audífonos over-ear con cancelación activa de ruido y audio espacial.',
       precio: 2059,
       stock: 4,
-      imagenUrl: '$_cdn/mobile-accessories/apple-airpods-max-silver/thumbnail.webp',
+      imagenUrl:
+          '$_cdn/mobile-accessories/apple-airpods-max-silver/thumbnail.webp',
       icono: CupertinoIcons.headphones,
     ),
     const Producto(
@@ -522,10 +582,12 @@ class AppData {
       nombre: 'Beats Flex',
       marca: 'Beats',
       categoria: 'Audio',
-      descripcion: 'Audífonos inalámbricos con auriculares magnéticos y hasta 12 horas de batería.',
+      descripcion:
+          'Audífonos inalámbricos con auriculares magnéticos y hasta 12 horas de batería.',
       precio: 189,
       stock: 50,
-      imagenUrl: '$_cdn/mobile-accessories/beats-flex-wireless-earphones/thumbnail.webp',
+      imagenUrl:
+          '$_cdn/mobile-accessories/beats-flex-wireless-earphones/thumbnail.webp',
       icono: CupertinoIcons.headphones,
     ),
     const Producto(
@@ -533,34 +595,54 @@ class AppData {
       nombre: 'Apple Watch Series 4',
       marca: 'Apple',
       categoria: 'Wearables',
-      descripcion: 'Smartwatch dorado con monitor de ritmo cardiaco, GPS y seguimiento de actividad.',
+      descripcion:
+          'Smartwatch dorado con monitor de ritmo cardiaco, GPS y seguimiento de actividad.',
       precio: 1299,
       stock: 8,
-      imagenUrl: '$_cdn/mobile-accessories/apple-watch-series-4-gold/thumbnail.webp',
+      imagenUrl:
+          '$_cdn/mobile-accessories/apple-watch-series-4-gold/thumbnail.webp',
       icono: CupertinoIcons.clock,
     ),
   ]);
 
   /// Galería de fotos para elegir al REGISTRAR un producto nuevo
   static const List<ImagenCatalogo> galeria = [
-    ImagenCatalogo('MacBook Pro', 'Laptops', '$_cdn/laptops/apple-macbook-pro-14-inch-space-grey/thumbnail.webp'),
-    ImagenCatalogo('Matebook X Pro', 'Laptops', '$_cdn/laptops/huawei-matebook-x-pro/thumbnail.webp'),
-    ImagenCatalogo('Dell XPS 13', 'Laptops', '$_cdn/laptops/new-dell-xps-13-9300-laptop/thumbnail.webp'),
-    ImagenCatalogo('Lenovo Yoga', 'Laptops', '$_cdn/laptops/lenovo-yoga-920/thumbnail.webp'),
-    ImagenCatalogo('iPhone 13 Pro', 'Celulares', '$_cdn/smartphones/iphone-13-pro/thumbnail.webp'),
-    ImagenCatalogo('iPhone X', 'Celulares', '$_cdn/smartphones/iphone-x/thumbnail.webp'),
-    ImagenCatalogo('Galaxy S10', 'Celulares', '$_cdn/smartphones/samsung-galaxy-s10/thumbnail.webp'),
-    ImagenCatalogo('Oppo F19 Pro+', 'Celulares', '$_cdn/smartphones/oppo-f19-pro-plus/thumbnail.webp'),
-    ImagenCatalogo('iPad Mini', 'Tablets', '$_cdn/tablets/ipad-mini-2021-starlight/thumbnail.webp'),
-    ImagenCatalogo('Galaxy Tab', 'Tablets', '$_cdn/tablets/samsung-galaxy-tab-white/thumbnail.webp'),
-    ImagenCatalogo('AirPods', 'Audio', '$_cdn/mobile-accessories/apple-airpods/thumbnail.webp'),
-    ImagenCatalogo('AirPods Max', 'Audio', '$_cdn/mobile-accessories/apple-airpods-max-silver/thumbnail.webp'),
-    ImagenCatalogo('HomePod Mini', 'Audio', '$_cdn/mobile-accessories/apple-homepod-mini-cosmic-grey/thumbnail.webp'),
-    ImagenCatalogo('Echo Plus', 'Audio', '$_cdn/mobile-accessories/amazon-echo-plus/thumbnail.webp'),
-    ImagenCatalogo('Apple Watch', 'Wearables', '$_cdn/mobile-accessories/apple-watch-series-4-gold/thumbnail.webp'),
-    ImagenCatalogo('MagSafe Battery', 'Accesorios', '$_cdn/mobile-accessories/apple-magsafe-battery-pack/thumbnail.webp'),
-    ImagenCatalogo('Cargador iPhone', 'Accesorios', '$_cdn/mobile-accessories/apple-iphone-charger/thumbnail.webp'),
-    ImagenCatalogo('Funda MagSafe', 'Accesorios', '$_cdn/mobile-accessories/iphone-12-silicone-case-with-magsafe-plum/thumbnail.webp'),
+    ImagenCatalogo('MacBook Pro', 'Laptops',
+        '$_cdn/laptops/apple-macbook-pro-14-inch-space-grey/thumbnail.webp'),
+    ImagenCatalogo('Matebook X Pro', 'Laptops',
+        '$_cdn/laptops/huawei-matebook-x-pro/thumbnail.webp'),
+    ImagenCatalogo('Dell XPS 13', 'Laptops',
+        '$_cdn/laptops/new-dell-xps-13-9300-laptop/thumbnail.webp'),
+    ImagenCatalogo('Lenovo Yoga', 'Laptops',
+        '$_cdn/laptops/lenovo-yoga-920/thumbnail.webp'),
+    ImagenCatalogo('iPhone 13 Pro', 'Celulares',
+        '$_cdn/smartphones/iphone-13-pro/thumbnail.webp'),
+    ImagenCatalogo(
+        'iPhone X', 'Celulares', '$_cdn/smartphones/iphone-x/thumbnail.webp'),
+    ImagenCatalogo('Galaxy S10', 'Celulares',
+        '$_cdn/smartphones/samsung-galaxy-s10/thumbnail.webp'),
+    ImagenCatalogo('Oppo F19 Pro+', 'Celulares',
+        '$_cdn/smartphones/oppo-f19-pro-plus/thumbnail.webp'),
+    ImagenCatalogo('iPad Mini', 'Tablets',
+        '$_cdn/tablets/ipad-mini-2021-starlight/thumbnail.webp'),
+    ImagenCatalogo('Galaxy Tab', 'Tablets',
+        '$_cdn/tablets/samsung-galaxy-tab-white/thumbnail.webp'),
+    ImagenCatalogo('AirPods', 'Audio',
+        '$_cdn/mobile-accessories/apple-airpods/thumbnail.webp'),
+    ImagenCatalogo('AirPods Max', 'Audio',
+        '$_cdn/mobile-accessories/apple-airpods-max-silver/thumbnail.webp'),
+    ImagenCatalogo('HomePod Mini', 'Audio',
+        '$_cdn/mobile-accessories/apple-homepod-mini-cosmic-grey/thumbnail.webp'),
+    ImagenCatalogo('Echo Plus', 'Audio',
+        '$_cdn/mobile-accessories/amazon-echo-plus/thumbnail.webp'),
+    ImagenCatalogo('Apple Watch', 'Wearables',
+        '$_cdn/mobile-accessories/apple-watch-series-4-gold/thumbnail.webp'),
+    ImagenCatalogo('MagSafe Battery', 'Accesorios',
+        '$_cdn/mobile-accessories/apple-magsafe-battery-pack/thumbnail.webp'),
+    ImagenCatalogo('Cargador iPhone', 'Accesorios',
+        '$_cdn/mobile-accessories/apple-iphone-charger/thumbnail.webp'),
+    ImagenCatalogo('Funda MagSafe', 'Accesorios',
+        '$_cdn/mobile-accessories/iphone-12-silicone-case-with-magsafe-plum/thumbnail.webp'),
   ];
 
   // Operaciones CRUD
@@ -684,7 +766,8 @@ class _ToastState extends State<_Toast> {
             duration: const Duration(milliseconds: 250),
             child: Center(
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(
                   color: AppColors.label.withValues(alpha: 0.92),
                   borderRadius: BorderRadius.circular(30),
@@ -719,6 +802,123 @@ class _ToastState extends State<_Toast> {
           ),
         ),
       ),
+    );
+  }
+}
+
+// ===== lib/widgets/gradient_header.dart =====
+// Encabezado con degradado frío y círculos decorativos.
+// Va justo debajo de la barra de navegación para continuar su color.
+
+
+class GradientHeader extends StatelessWidget {
+  final Widget child;
+  final EdgeInsetsGeometry padding;
+
+  const GradientHeader({
+    super.key,
+    required this.child,
+    this.padding = const EdgeInsets.fromLTRB(20, 4, 20, 24),
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      clipBehavior: Clip.antiAlias,
+      decoration: const BoxDecoration(
+        gradient: AppColors.headerGradient,
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(32)),
+      ),
+      child: Stack(
+        children: [
+          Positioned(top: 24, right: -90, child: _circulo(220, 0.08)),
+          Positioned(bottom: -60, left: -40, child: _circulo(160, 0.06)),
+          Padding(
+            padding: padding,
+            child: SizedBox(width: double.infinity, child: child),
+          ),
+        ],
+      ),
+    );
+  }
+
+  static Widget _circulo(double size, double alpha) => Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: AppColors.cyan.withValues(alpha: alpha * 2),
+        ),
+      );
+}
+
+/// Barra de navegación con título grande sobre fondo azul marino
+class AppSliverNavBar extends StatelessWidget {
+  final String titulo;
+  final Widget? leading;
+  final Widget? trailing;
+
+  const AppSliverNavBar(
+      {super.key, required this.titulo, this.leading, this.trailing});
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoSliverNavigationBar(
+      largeTitle: Text(titulo),
+      middle: Text(titulo),
+      alwaysShowMiddle: false,
+      backgroundColor: AppColors.navy,
+      // Siempre azul, aunque el contenido no haya pasado por debajo
+      automaticBackgroundVisibility: false,
+      brightness: Brightness.dark,
+      border: null,
+      leading: leading,
+      trailing: trailing,
+    );
+  }
+}
+
+/// Botón de texto blanco para las barras oscuras
+class NavTextButton extends StatelessWidget {
+  final String texto;
+  final VoidCallback onPressed;
+  final bool negrita;
+
+  const NavTextButton(this.texto,
+      {super.key, required this.onPressed, this.negrita = false});
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoButton(
+      padding: EdgeInsets.zero,
+      onPressed: onPressed,
+      child: Text(
+        texto,
+        style: TextStyle(
+          color: CupertinoColors.white,
+          fontSize: 17,
+          fontWeight: negrita ? FontWeight.w600 : FontWeight.w400,
+        ),
+      ),
+    );
+  }
+}
+
+/// Botón de ícono blanco para las barras oscuras
+class NavIconButton extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback onPressed;
+  final double size;
+
+  const NavIconButton(this.icon,
+      {super.key, required this.onPressed, this.size = 24});
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoButton(
+      padding: EdgeInsets.zero,
+      onPressed: onPressed,
+      child: Icon(icon, color: CupertinoColors.white, size: size),
     );
   }
 }
@@ -1004,7 +1204,8 @@ class StockBadge extends StatelessWidget {
           const SizedBox(width: 5),
           Text(
             stock == 1 ? '1 ud.' : '$stock uds.',
-            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: color),
+            style: TextStyle(
+                fontSize: 12, fontWeight: FontWeight.w600, color: color),
           ),
         ],
       ),
@@ -1038,7 +1239,8 @@ class DetalleProductoScreen extends StatelessWidget {
   const DetalleProductoScreen({super.key, required this.productoId});
 
   /// Confirma y elimina el producto. Devuelve true si se eliminó.
-  static Future<bool> confirmarEliminar(BuildContext context, Producto p) async {
+  static Future<bool> confirmarEliminar(
+      BuildContext context, Producto p) async {
     final ok = await preguntarEliminar(context, p);
     if (!ok) return false;
     if (context.mounted) eliminar(context, p);
@@ -1057,7 +1259,8 @@ class DetalleProductoScreen extends StatelessWidget {
   }
 
   /// Diálogo de confirmación de iOS. Devuelve true si el usuario acepta.
-  static Future<bool> preguntarEliminar(BuildContext context, Producto p) async {
+  static Future<bool> preguntarEliminar(
+      BuildContext context, Producto p) async {
     final ok = await showCupertinoDialog<bool>(
       context: context,
       builder: (ctx) => CupertinoAlertDialog(
@@ -1092,19 +1295,28 @@ class DetalleProductoScreen extends StatelessWidget {
         final encontrados = lista.where((p) => p.id == productoId);
         if (encontrados.isEmpty) {
           return const CupertinoPageScaffold(
-            navigationBar: CupertinoNavigationBar(middle: Text('Producto')),
-            child: Center(child: Text('Este producto ya no existe', style: AppText.subhead)),
+            navigationBar:
+                CupertinoNavigationBar(middle: Text('Producto'), border: null),
+            child: Center(
+                child:
+                    Text('Este producto ya no existe', style: AppText.subhead)),
           );
         }
         final p = encontrados.first;
 
         return CupertinoPageScaffold(
           navigationBar: CupertinoNavigationBar(
+            leading: const CupertinoNavigationBarBackButton(
+                color: CupertinoColors.white),
             middle: Text(p.nombre),
-            trailing: CupertinoButton(
-              padding: EdgeInsets.zero,
-              onPressed: () => AppRoutes.abrir(context, AppRoutes.registrarProducto, arguments: p),
-              child: const Text('Editar'),
+            border: null,
+            automaticBackgroundVisibility: false,
+            brightness: Brightness.dark,
+            trailing: NavTextButton(
+              'Editar',
+              onPressed: () => AppRoutes.abrir(
+                  context, AppRoutes.registrarProducto,
+                  arguments: p),
             ),
           ),
           child: SafeArea(
@@ -1112,23 +1324,31 @@ class DetalleProductoScreen extends StatelessWidget {
               padding: const EdgeInsets.only(bottom: 32),
               children: [
                 // Foto grande
-                Container(
-                  margin: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: AppColors.card,
-                    borderRadius: BorderRadius.circular(24),
-                    boxShadow: AppColors.softShadow,
-                  ),
+                GradientHeader(
+                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
                   child: Center(
-                    child: Hero(
-                      tag: 'producto-${p.id}',
-                      child: ProductoImagen(
-                        url: p.imagenUrl,
-                        iconoRespaldo: p.icono,
-                        categoria: p.categoria,
-                        size: 220,
-                        radius: 20,
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: AppColors.card,
+                        borderRadius: BorderRadius.circular(28),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.navy.withValues(alpha: 0.35),
+                            blurRadius: 30,
+                            offset: const Offset(0, 14),
+                          ),
+                        ],
+                      ),
+                      child: Hero(
+                        tag: 'producto-${p.id}',
+                        child: ProductoImagen(
+                          url: p.imagenUrl,
+                          iconoRespaldo: p.icono,
+                          categoria: p.categoria,
+                          size: 200,
+                          radius: 20,
+                        ),
                       ),
                     ),
                   ),
@@ -1140,13 +1360,16 @@ class DetalleProductoScreen extends StatelessWidget {
                     children: [
                       Row(
                         children: [
-                          _EtiquetaCategoria(texto: p.categoria, color: AppColors.categoria(p.categoria)),
+                          _EtiquetaCategoria(
+                              texto: p.categoria,
+                              color: AppColors.categoria(p.categoria)),
                           const SizedBox(width: 8),
                           StockBadge(stock: p.stock),
                         ],
                       ),
                       const SizedBox(height: 12),
-                      if (p.marca.isNotEmpty) Text(p.marca, style: AppText.subhead),
+                      if (p.marca.isNotEmpty)
+                        Text(p.marca, style: AppText.subhead),
                       Text(p.nombre, style: AppText.title),
                       const SizedBox(height: 6),
                       Text(
@@ -1161,15 +1384,20 @@ class DetalleProductoScreen extends StatelessWidget {
                   ),
                 ),
                 CupertinoListSection.insetGrouped(
+                  backgroundColor: AppColors.background,
                   header: const SectionHeader('Inventario'),
                   children: [
                     CupertinoListTile(
-                      leading: const IconBox(icon: CupertinoIcons.tag_fill, color: AppColors.primary),
+                      leading: const IconBox(
+                          icon: CupertinoIcons.tag_fill,
+                          color: AppColors.primary),
                       title: const Text('Precio unitario'),
                       additionalInfo: Text(p.precioFormateado),
                     ),
                     CupertinoListTile(
-                      leading: const IconBox(icon: CupertinoIcons.cube_box_fill, color: AppColors.blue),
+                      leading: const IconBox(
+                          icon: CupertinoIcons.cube_box_fill,
+                          color: AppColors.primary),
                       title: const Text('Unidades en stock'),
                       additionalInfo: Text('${p.stock}'),
                     ),
@@ -1184,13 +1412,17 @@ class DetalleProductoScreen extends StatelessWidget {
                   ],
                 ),
                 CupertinoListSection.insetGrouped(
+                  backgroundColor: AppColors.background,
                   header: const SectionHeader('Descripción'),
                   children: [
                     Padding(
                       padding: const EdgeInsets.all(16),
                       child: Text(
-                        p.descripcion.isEmpty ? 'Sin descripción.' : p.descripcion,
-                        style: const TextStyle(fontSize: 15, height: 1.45, color: AppColors.label),
+                        p.descripcion.isEmpty
+                            ? 'Sin descripción.'
+                            : p.descripcion,
+                        style: const TextStyle(
+                            fontSize: 15, height: 1.45, color: AppColors.label),
                       ),
                     ),
                   ],
@@ -1203,8 +1435,9 @@ class DetalleProductoScreen extends StatelessWidget {
                         width: double.infinity,
                         child: CupertinoButton.filled(
                           borderRadius: BorderRadius.circular(14),
-                          onPressed: () =>
-                              AppRoutes.abrir(context, AppRoutes.registrarProducto, arguments: p),
+                          onPressed: () => AppRoutes.abrir(
+                              context, AppRoutes.registrarProducto,
+                              arguments: p),
                           child: const Text('Editar producto'),
                         ),
                       ),
@@ -1212,7 +1445,8 @@ class DetalleProductoScreen extends StatelessWidget {
                       CupertinoButton(
                         onPressed: () async {
                           final eliminado = await confirmarEliminar(context, p);
-                          if (eliminado && context.mounted) Navigator.pop(context);
+                          if (eliminado && context.mounted)
+                            Navigator.pop(context);
                         },
                         child: const Text(
                           'Eliminar producto',
@@ -1246,7 +1480,8 @@ class _EtiquetaCategoria extends StatelessWidget {
       ),
       child: Text(
         texto,
-        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: color),
+        style:
+            TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: color),
       ),
     );
   }
@@ -1309,17 +1544,13 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
       navigationBar: CupertinoNavigationBar(
-        leading: CupertinoButton(
-          padding: EdgeInsets.zero,
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Cancelar'),
-        ),
+        border: null,
+        automaticBackgroundVisibility: false,
+        brightness: Brightness.dark,
+        leading:
+            NavTextButton('Cancelar', onPressed: () => Navigator.pop(context)),
         middle: const Text('Editar perfil'),
-        trailing: CupertinoButton(
-          padding: EdgeInsets.zero,
-          onPressed: _guardar,
-          child: const Text('Listo', style: TextStyle(fontWeight: FontWeight.w600)),
-        ),
+        trailing: NavTextButton('Listo', onPressed: _guardar, negrita: true),
       ),
       child: SafeArea(
         child: Form(
@@ -1327,6 +1558,7 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
           child: ListView(
             children: [
               CupertinoFormSection.insetGrouped(
+                backgroundColor: AppColors.background,
                 header: const SectionHeader('Datos personales'),
                 children: [
                   CupertinoTextFormFieldRow(
@@ -1334,8 +1566,9 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
                     prefix: const _EtiquetaPerfil('Nombre'),
                     placeholder: 'Nombre y apellido',
                     textCapitalization: TextCapitalization.words,
-                    validator: (v) =>
-                        (v == null || v.trim().length < 3) ? 'Ingresa tu nombre completo' : null,
+                    validator: (v) => (v == null || v.trim().length < 3)
+                        ? 'Ingresa tu nombre completo'
+                        : null,
                   ),
                   CupertinoTextFormFieldRow(
                     controller: _emailCtrl,
@@ -1345,7 +1578,9 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
                     autocorrect: false,
                     validator: (v) {
                       final regex = RegExp(r'^[\w.\-]+@[\w\-]+\.[\w.]+$');
-                      return regex.hasMatch(v?.trim() ?? '') ? null : 'El email no es válido';
+                      return regex.hasMatch(v?.trim() ?? '')
+                          ? null
+                          : 'El email no es válido';
                     },
                   ),
                   CupertinoTextFormFieldRow(
@@ -1357,13 +1592,17 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
                       FilteringTextInputFormatter.digitsOnly,
                       LengthLimitingTextInputFormatter(9),
                     ],
-                    validator: (v) => (v == null || v.length != 9) ? 'Debe tener 9 dígitos' : null,
+                    validator: (v) => (v == null || v.length != 9)
+                        ? 'Debe tener 9 dígitos'
+                        : null,
                   ),
                 ],
               ),
               CupertinoFormSection.insetGrouped(
+                backgroundColor: AppColors.background,
                 header: const SectionHeader('Rol'),
-                footer: const Text('El rol define qué acciones puede realizar en el inventario.'),
+                footer: const Text(
+                    'El rol define qué acciones puede realizar en el inventario.'),
                 children: [
                   Padding(
                     padding: const EdgeInsets.all(12),
@@ -1394,7 +1633,8 @@ class _EtiquetaPerfil extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: 90,
-      child: Text(texto, style: const TextStyle(fontSize: 16, color: AppColors.label)),
+      child: Text(texto,
+          style: const TextStyle(fontSize: 16, color: AppColors.label)),
     );
   }
 }
@@ -1429,6 +1669,8 @@ class _HomeScreenState extends State<HomeScreen> {
       controller: _tabs,
       tabBar: CupertinoTabBar(
         activeColor: AppColors.primary,
+        inactiveColor: AppColors.tertiaryLabel,
+        backgroundColor: const Color(0xF2FFFFFF),
         iconSize: 26,
         items: const [
           BottomNavigationBarItem(
@@ -1530,7 +1772,8 @@ class _ListarProductosScreenState extends State<ListarProductosScreen> {
 
     switch (_orden) {
       case Orden.nombre:
-        lista.sort((a, b) => a.nombre.toLowerCase().compareTo(b.nombre.toLowerCase()));
+        lista.sort(
+            (a, b) => a.nombre.toLowerCase().compareTo(b.nombre.toLowerCase()));
       case Orden.precioMayor:
         lista.sort((a, b) => b.precio.compareTo(a.precio));
       case Orden.precioMenor:
@@ -1567,7 +1810,8 @@ class _ListarProductosScreenState extends State<ListarProductosScreen> {
           CupertinoActionSheetAction(
             onPressed: () {
               Navigator.pop(ctx);
-              AppRoutes.abrir(context, AppRoutes.registrarProducto, arguments: p);
+              AppRoutes.abrir(context, AppRoutes.registrarProducto,
+                  arguments: p);
             },
             child: const Text('Editar'),
           ),
@@ -1614,6 +1858,19 @@ class _ListarProductosScreenState extends State<ListarProductosScreen> {
     );
   }
 
+  /// Texto del filtro: oscuro si está elegido, blanco si no
+  Widget _segmento(String texto, int valor) {
+    final activo = _filtroStock == valor;
+    return Text(
+      texto,
+      style: TextStyle(
+        fontSize: 14,
+        fontWeight: activo ? FontWeight.w600 : FontWeight.w500,
+        color: activo ? AppColors.navy : CupertinoColors.white,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final categorias = ['Todas', ...AppData.categorias.keys];
@@ -1625,23 +1882,21 @@ class _ListarProductosScreenState extends State<ListarProductosScreen> {
           final lista = _filtrar(todos);
 
           return CustomScrollView(
-            physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+            physics: const BouncingScrollPhysics(
+                parent: AlwaysScrollableScrollPhysics()),
             slivers: [
-              CupertinoSliverNavigationBar(
-                largeTitle: const Text('Productos'),
-                middle: const Text('Productos'),
-                alwaysShowMiddle: false,
-                backgroundColor: AppColors.background.withValues(alpha: 0.9),
-                border: null,
-                leading: CupertinoButton(
-                  padding: EdgeInsets.zero,
+              AppSliverNavBar(
+                titulo: 'Productos',
+                leading: NavIconButton(
+                  CupertinoIcons.arrow_up_arrow_down,
+                  size: 22,
                   onPressed: _elegirOrden,
-                  child: const Icon(CupertinoIcons.arrow_up_arrow_down, size: 22),
                 ),
-                trailing: CupertinoButton(
-                  padding: EdgeInsets.zero,
-                  onPressed: () => AppRoutes.abrir(context, AppRoutes.registrarProducto),
-                  child: const Icon(CupertinoIcons.plus_circle_fill, size: 28),
+                trailing: NavIconButton(
+                  CupertinoIcons.plus_circle_fill,
+                  size: 28,
+                  onPressed: () =>
+                      AppRoutes.abrir(context, AppRoutes.registrarProducto),
                 ),
               ),
 
@@ -1649,26 +1904,36 @@ class _ListarProductosScreenState extends State<ListarProductosScreen> {
               CupertinoSliverRefreshControl(
                 onRefresh: () async {
                   await Future.delayed(const Duration(milliseconds: 900));
-                  if (context.mounted) AppToast.show(context, 'Inventario actualizado');
+                  if (context.mounted)
+                    AppToast.show(context, 'Inventario actualizado');
                 },
               ),
 
+              // Encabezado azul con buscador y filtro de stock
               SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
+                child: GradientHeader(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Padding(
-                        padding: const EdgeInsets.only(left: 4, bottom: 10),
-                        child: Text(
-                          '${todos.length} productos · ${AppData.totalUnidades} unidades',
-                          style: AppText.subhead,
+                      Text(
+                        '${todos.length} productos · ${AppData.totalUnidades} unidades',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: CupertinoColors.white.withValues(alpha: 0.75),
                         ),
                       ),
+                      const SizedBox(height: 12),
                       CupertinoSearchTextField(
                         controller: _buscarCtrl,
                         placeholder: 'Buscar por nombre o marca',
+                        backgroundColor:
+                            CupertinoColors.white.withValues(alpha: 0.14),
+                        style: const TextStyle(color: CupertinoColors.white),
+                        placeholderStyle: TextStyle(
+                          color: CupertinoColors.white.withValues(alpha: 0.6),
+                        ),
+                        itemColor:
+                            CupertinoColors.white.withValues(alpha: 0.75),
                         onChanged: (v) => setState(() => _busqueda = v),
                       ),
                       const SizedBox(height: 12),
@@ -1676,11 +1941,15 @@ class _ListarProductosScreenState extends State<ListarProductosScreen> {
                         width: double.infinity,
                         child: CupertinoSlidingSegmentedControl<int>(
                           groupValue: _filtroStock,
-                          onValueChanged: (v) => setState(() => _filtroStock = v ?? 0),
-                          children: const {
-                            0: Text('Todos'),
-                            1: Text('Disponibles'),
-                            2: Text('Stock bajo'),
+                          backgroundColor:
+                              CupertinoColors.white.withValues(alpha: 0.14),
+                          thumbColor: CupertinoColors.white,
+                          onValueChanged: (v) =>
+                              setState(() => _filtroStock = v ?? 0),
+                          children: {
+                            0: _segmento('Todos', 0),
+                            1: _segmento('Disponibles', 1),
+                            2: _segmento('Stock bajo', 2),
                           },
                         ),
                       ),
@@ -1695,7 +1964,8 @@ class _ListarProductosScreenState extends State<ListarProductosScreen> {
                   height: 52,
                   child: ListView.separated(
                     scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 10),
                     itemCount: categorias.length,
                     separatorBuilder: (_, __) => const SizedBox(width: 8),
                     itemBuilder: (_, i) => _Pildora(
@@ -1712,7 +1982,8 @@ class _ListarProductosScreenState extends State<ListarProductosScreen> {
                   hasScrollBody: false,
                   child: _ListaVacia(
                     hayFiltros: todos.isNotEmpty,
-                    onRegistrar: () => AppRoutes.abrir(context, AppRoutes.registrarProducto),
+                    onRegistrar: () =>
+                        AppRoutes.abrir(context, AppRoutes.registrarProducto),
                   ),
                 )
               else
@@ -1732,8 +2003,10 @@ class _ListarProductosScreenState extends State<ListarProductosScreen> {
                       return Dismissible(
                         key: ValueKey(p.id),
                         direction: DismissDirection.endToStart,
-                        confirmDismiss: (_) => DetalleProductoScreen.preguntarEliminar(context, p),
-                        onDismissed: (_) => DetalleProductoScreen.eliminar(context, p),
+                        confirmDismiss: (_) =>
+                            DetalleProductoScreen.preguntarEliminar(context, p),
+                        onDismissed: (_) =>
+                            DetalleProductoScreen.eliminar(context, p),
                         background: Container(
                           alignment: Alignment.centerRight,
                           padding: const EdgeInsets.only(right: 24),
@@ -1744,7 +2017,8 @@ class _ListarProductosScreenState extends State<ListarProductosScreen> {
                           child: const Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(CupertinoIcons.trash, color: CupertinoColors.white),
+                              Icon(CupertinoIcons.trash,
+                                  color: CupertinoColors.white),
                               SizedBox(height: 2),
                               Text(
                                 'Eliminar',
@@ -1779,7 +2053,8 @@ class _Pildora extends StatelessWidget {
   final bool activa;
   final VoidCallback onTap;
 
-  const _Pildora({required this.texto, required this.activa, required this.onTap});
+  const _Pildora(
+      {required this.texto, required this.activa, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -1791,9 +2066,11 @@ class _Pildora extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 14),
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: activa ? AppColors.label : AppColors.card,
+          gradient: activa ? AppColors.brandGradient : null,
+          color: activa ? null : AppColors.card,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: activa ? AppColors.label : AppColors.separator),
+          border: Border.all(
+              color: activa ? const Color(0x00000000) : AppColors.separator),
         ),
         child: Text(
           texto,
@@ -1884,7 +2161,8 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _cargando = true);
-    await Future.delayed(const Duration(milliseconds: 900)); // simula el servidor
+    await Future.delayed(
+        const Duration(milliseconds: 900)); // simula el servidor
     if (!mounted) return;
     setState(() => _cargando = false);
 
@@ -1903,7 +2181,8 @@ class _LoginScreenState extends State<LoginScreen> {
         title: const Text('No se pudo iniciar sesión'),
         content: const Padding(
           padding: EdgeInsets.only(top: 6),
-          child: Text('El email o la contraseña no son correctos. Inténtalo otra vez.'),
+          child: Text(
+              'El email o la contraseña no son correctos. Inténtalo otra vez.'),
         ),
         actions: [
           CupertinoDialogAction(
@@ -1948,101 +2227,162 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
-      backgroundColor: AppColors.background,
-      child: GestureDetector(
-        // Tocar fuera de los campos cierra el teclado
-        onTap: () => FocusScope.of(context).unfocus(),
-        child: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(vertical: 24),
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 460),
-                child: Column(
-                  children: [
-                    _encabezado(),
-                    const SizedBox(height: 28),
-                    Form(
-                      key: _formKey,
-                      child: CupertinoFormSection.insetGrouped(
-                        header: const Text('CREDENCIALES'),
-                        footer: Row(
-                          children: [
-                            const Spacer(),
-                            CupertinoButton(
-                              padding: EdgeInsets.zero,
-                              onPressed: _olvideContrasena,
-                              child: const Text(
-                                '¿Olvidaste tu contraseña?',
-                                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+      backgroundColor: AppColors.navy,
+      child: Container(
+        decoration: const BoxDecoration(gradient: AppColors.headerGradient),
+        child: Stack(
+          children: [
+            // Círculos decorativos de fondo
+            Positioned(top: -90, right: -70, child: _circulo(260, 0.14)),
+            Positioned(top: 260, left: -110, child: _circulo(220, 0.08)),
+            Positioned(bottom: -80, right: -60, child: _circulo(240, 0.12)),
+            GestureDetector(
+              // Tocar fuera de los campos cierra el teclado
+              onTap: () => FocusScope.of(context).unfocus(),
+              child: SafeArea(
+                child: Center(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(vertical: 24),
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 460),
+                      child: Column(
+                        children: [
+                          _encabezado(),
+                          const SizedBox(height: 28),
+                          Form(
+                            key: _formKey,
+                            child: CupertinoFormSection.insetGrouped(
+                              backgroundColor: const Color(0x00000000),
+                              header: Text(
+                                'CREDENCIALES',
+                                style: TextStyle(
+                                    color: CupertinoColors.white
+                                        .withValues(alpha: 0.7)),
+                              ),
+                              footer: Row(
+                                children: [
+                                  const Spacer(),
+                                  CupertinoButton(
+                                    padding: EdgeInsets.zero,
+                                    onPressed: _olvideContrasena,
+                                    child: const Text(
+                                      '¿Olvidaste tu contraseña?',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w500,
+                                        color: Color(0xFF67E8F9),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              children: [
+                                CupertinoTextFormFieldRow(
+                                  controller: _emailCtrl,
+                                  prefix: const _Prefijo(
+                                      CupertinoIcons.envelope_fill,
+                                      AppColors.primary),
+                                  placeholder: 'correo@ejemplo.com',
+                                  keyboardType: TextInputType.emailAddress,
+                                  textInputAction: TextInputAction.next,
+                                  autocorrect: false,
+                                  validator: (v) {
+                                    if (v == null || v.trim().isEmpty)
+                                      return 'Ingresa tu email';
+                                    final regex =
+                                        RegExp(r'^[\w.\-]+@[\w\-]+\.[\w.]+$');
+                                    if (!regex.hasMatch(v.trim()))
+                                      return 'El email no es válido';
+                                    return null;
+                                  },
+                                ),
+                                PasswordRow(
+                                  controller: _passCtrl,
+                                  prefix: const _Prefijo(
+                                      CupertinoIcons.lock_fill,
+                                      AppColors.slate),
+                                  onSubmitted: (_) => _iniciarSesion(),
+                                  validator: (v) {
+                                    if (v == null || v.isEmpty)
+                                      return 'Ingresa tu contraseña';
+                                    if (v.length < 6)
+                                      return 'Mínimo 6 caracteres';
+                                    return null;
+                                  },
+                                ),
+                                CupertinoFormRow(
+                                  prefix: const Text('Recordarme'),
+                                  child: CupertinoSwitch(
+                                    value: _recordarme,
+                                    activeTrackColor: AppColors.primary,
+                                    onChanged: (v) =>
+                                        setState(() => _recordarme = v),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            child: SizedBox(
+                              width: double.infinity,
+                              child: CupertinoButton(
+                                padding: EdgeInsets.zero,
+                                onPressed: _cargando ? null : _iniciarSesion,
+                                child: Container(
+                                  height: 54,
+                                  alignment: Alignment.center,
+                                  decoration: BoxDecoration(
+                                    gradient: AppColors.brandGradient,
+                                    borderRadius: BorderRadius.circular(14),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: AppColors.cyan
+                                            .withValues(alpha: 0.35),
+                                        blurRadius: 20,
+                                        offset: const Offset(0, 8),
+                                      ),
+                                    ],
+                                  ),
+                                  child: _cargando
+                                      ? const CupertinoActivityIndicator(
+                                          color: CupertinoColors.white)
+                                      : const Text(
+                                          'Iniciar sesión',
+                                          style: TextStyle(
+                                            color: CupertinoColors.white,
+                                            fontSize: 17,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                ),
                               ),
                             ),
-                          ],
-                        ),
-                        children: [
-                          CupertinoTextFormFieldRow(
-                            controller: _emailCtrl,
-                            prefix: const _Prefijo(CupertinoIcons.envelope_fill, AppColors.blue),
-                            placeholder: 'correo@ejemplo.com',
-                            keyboardType: TextInputType.emailAddress,
-                            textInputAction: TextInputAction.next,
-                            autocorrect: false,
-                            validator: (v) {
-                              if (v == null || v.trim().isEmpty) return 'Ingresa tu email';
-                              final regex = RegExp(r'^[\w.\-]+@[\w\-]+\.[\w.]+$');
-                              if (!regex.hasMatch(v.trim())) return 'El email no es válido';
-                              return null;
-                            },
                           ),
-                          PasswordRow(
-                            controller: _passCtrl,
-                            prefix: const _Prefijo(CupertinoIcons.lock_fill, AppColors.grey),
-                            onSubmitted: (_) => _iniciarSesion(),
-                            validator: (v) {
-                              if (v == null || v.isEmpty) return 'Ingresa tu contraseña';
-                              if (v.length < 6) return 'Mínimo 6 caracteres';
-                              return null;
-                            },
-                          ),
-                          CupertinoFormRow(
-                            prefix: const Text('Recordarme'),
-                            child: CupertinoSwitch(
-                              value: _recordarme,
-                              activeTrackColor: AppColors.primary,
-                              onChanged: (v) => setState(() => _recordarme = v),
-                            ),
-                          ),
+                          const SizedBox(height: 28),
+                          _cuentaDemo(),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 12),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: SizedBox(
-                        width: double.infinity,
-                        child: CupertinoButton.filled(
-                          borderRadius: BorderRadius.circular(14),
-                          onPressed: _cargando ? null : _iniciarSesion,
-                          child: _cargando
-                              ? const CupertinoActivityIndicator(color: CupertinoColors.white)
-                              : const Text(
-                                  'Iniciar sesión',
-                                  style: TextStyle(fontWeight: FontWeight.w600),
-                                ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 28),
-                    _cuentaDemo(),
-                  ],
+                  ),
                 ),
               ),
             ),
-          ),
+          ],
         ),
       ),
     );
   }
+
+  Widget _circulo(double size, double alpha) => Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: AppColors.cyan.withValues(alpha: alpha),
+        ),
+      );
 
   Widget _encabezado() {
     return Column(
@@ -2052,23 +2392,29 @@ class _LoginScreenState extends State<LoginScreen> {
           height: 88,
           decoration: BoxDecoration(
             gradient: AppColors.brandGradient,
-            borderRadius: BorderRadius.circular(22),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+                color: CupertinoColors.white.withValues(alpha: 0.35),
+                width: 1.5),
             boxShadow: [
               BoxShadow(
-                color: AppColors.primary.withValues(alpha: 0.35),
-                blurRadius: 24,
+                color: AppColors.cyan.withValues(alpha: 0.4),
+                blurRadius: 28,
                 offset: const Offset(0, 10),
               ),
             ],
           ),
-          child: const Icon(CupertinoIcons.bag_fill, color: CupertinoColors.white, size: 44),
+          child: const Icon(CupertinoIcons.bag_fill,
+              color: CupertinoColors.white, size: 44),
         ),
         const SizedBox(height: 18),
-        const Text('TechStore', style: AppText.largeTitle),
+        const Text('TechStore', style: AppText.navLarge),
         const SizedBox(height: 6),
-        const Text(
+        Text(
           'Inicia sesión para gestionar tu inventario',
-          style: TextStyle(fontSize: 15, color: AppColors.secondaryLabel),
+          style: TextStyle(
+              fontSize: 15,
+              color: CupertinoColors.white.withValues(alpha: 0.75)),
         ),
       ],
     );
@@ -2078,17 +2424,20 @@ class _LoginScreenState extends State<LoginScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
-        color: AppColors.primary.withValues(alpha: 0.08),
+        color: CupertinoColors.white.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
+        border:
+            Border.all(color: CupertinoColors.white.withValues(alpha: 0.15)),
       ),
       child: const Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(CupertinoIcons.info_circle_fill, size: 16, color: AppColors.primary),
+          Icon(CupertinoIcons.info_circle_fill,
+              size: 16, color: Color(0xFF67E8F9)),
           SizedBox(width: 6),
           Text(
             'Demo: ${AppData.demoEmail} · ${AppData.demoPassword}',
-            style: TextStyle(fontSize: 12, color: AppColors.primary),
+            style: TextStyle(fontSize: 12, color: CupertinoColors.white),
           ),
         ],
       ),
@@ -2108,7 +2457,8 @@ class _Prefijo extends StatelessWidget {
       width: 28,
       height: 28,
       margin: const EdgeInsets.only(right: 6),
-      decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(7)),
+      decoration:
+          BoxDecoration(color: color, borderRadius: BorderRadius.circular(7)),
       child: Icon(icon, size: 16, color: CupertinoColors.white),
     );
   }
@@ -2132,10 +2482,28 @@ class MenuScreen extends StatelessWidget {
 
   /// Fecha en español sin librerías: "Sábado, 14 de noviembre"
   static String fechaHoy() {
-    const dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+    const dias = [
+      'Lunes',
+      'Martes',
+      'Miércoles',
+      'Jueves',
+      'Viernes',
+      'Sábado',
+      'Domingo'
+    ];
     const meses = [
-      'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
-      'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'
+      'enero',
+      'febrero',
+      'marzo',
+      'abril',
+      'mayo',
+      'junio',
+      'julio',
+      'agosto',
+      'septiembre',
+      'octubre',
+      'noviembre',
+      'diciembre'
     ];
     final h = DateTime.now();
     return '${dias[h.weekday - 1]}, ${h.day} de ${meses[h.month - 1]}';
@@ -2156,64 +2524,77 @@ class MenuScreen extends StatelessWidget {
         valueListenable: AppData.productos,
         builder: (context, productos, _) {
           final bajos = AppData.stockBajo;
-          final destacados = [...productos]..sort((a, b) => b.precio.compareTo(a.precio));
+          final destacados = [...productos]
+            ..sort((a, b) => b.precio.compareTo(a.precio));
 
           return CustomScrollView(
             slivers: [
-              CupertinoSliverNavigationBar(
-                largeTitle: const Text('Inicio'),
-                middle: const Text('Inicio'),
-                alwaysShowMiddle: false,
-                border: null,
-                backgroundColor: AppColors.background.withValues(alpha: 0.9),
+              AppSliverNavBar(
+                titulo: 'Inicio',
                 trailing: _AvatarBoton(onTap: onVerPerfil),
               ),
-              SliverToBoxAdapter(child: _Saludo(fecha: fechaHoy())),
+
+              // Encabezado azul: saludo y resumen del inventario
               SliverToBoxAdapter(
-                child: _ResumenCard(
-                  productos: productos.length,
-                  unidades: AppData.totalUnidades,
-                  valor: AppData.valorInventario,
-                  stockBajo: bajos.length,
+                child: GradientHeader(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _Saludo(fecha: fechaHoy()),
+                      const SizedBox(height: 18),
+                      _Resumen(
+                        productos: productos.length,
+                        unidades: AppData.totalUnidades,
+                        valor: AppData.valorInventario,
+                        stockBajo: bajos.length,
+                      ),
+                    ],
+                  ),
                 ),
               ),
 
               // Accesos a cada pantalla del laboratorio
-              SliverToBoxAdapter(
-                child: CupertinoListSection.insetGrouped(
-                  header: const SectionHeader('Accesos rápidos'),
+              const SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(20, 24, 20, 12),
+                  child: Text('Accesos rápidos', style: AppText.section),
+                ),
+              ),
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                sliver: SliverGrid.count(
+                  crossAxisCount: 2,
+                  mainAxisSpacing: 12,
+                  crossAxisSpacing: 12,
+                  childAspectRatio: 1.45,
                   children: [
-                    CupertinoListTile(
-                      leading: const IconBox(icon: CupertinoIcons.plus, color: AppColors.primary),
-                      title: const Text('Registrar producto'),
-                      subtitle: const Text('Agregar al inventario'),
-                      trailing: const CupertinoListTileChevron(),
-                      onTap: () => AppRoutes.abrir(context, AppRoutes.registrarProducto),
+                    _Acceso(
+                      icono: CupertinoIcons.plus_app_fill,
+                      titulo: 'Registrar',
+                      subtitulo: 'Nuevo producto',
+                      degradado: AppColors.accesos[0],
+                      onTap: () =>
+                          AppRoutes.abrir(context, AppRoutes.registrarProducto),
                     ),
-                    CupertinoListTile(
-                      leading: const IconBox(icon: CupertinoIcons.list_bullet, color: AppColors.blue),
-                      title: const Text('Listar productos'),
-                      subtitle: const Text('Buscar, editar y eliminar'),
-                      additionalInfo: Text('${productos.length}'),
-                      trailing: const CupertinoListTileChevron(),
+                    _Acceso(
+                      icono: CupertinoIcons.square_list_fill,
+                      titulo: 'Productos',
+                      subtitulo: '${productos.length} en inventario',
+                      degradado: AppColors.accesos[1],
                       onTap: onVerProductos,
                     ),
-                    CupertinoListTile(
-                      leading: const IconBox(icon: CupertinoIcons.person_fill, color: AppColors.teal),
-                      title: const Text('Mi perfil'),
-                      subtitle: const Text('Datos de la cuenta'),
-                      trailing: const CupertinoListTileChevron(),
+                    _Acceso(
+                      icono: CupertinoIcons.person_crop_circle_fill,
+                      titulo: 'Mi perfil',
+                      subtitulo: 'Datos de cuenta',
+                      degradado: AppColors.accesos[2],
                       onTap: onVerPerfil,
                     ),
-                    CupertinoListTile(
-                      leading: const IconBox(
-                        icon: CupertinoIcons.square_arrow_right,
-                        color: AppColors.danger,
-                      ),
-                      title: const Text(
-                        'Cerrar sesión',
-                        style: TextStyle(color: AppColors.danger),
-                      ),
+                    _Acceso(
+                      icono: CupertinoIcons.square_arrow_right,
+                      titulo: 'Cerrar sesión',
+                      subtitulo: 'Salir de la app',
+                      degradado: AppColors.accesos[3],
                       onTap: () => AppRoutes.cerrarSesion(context),
                     ),
                   ],
@@ -2224,6 +2605,7 @@ class MenuScreen extends StatelessWidget {
               if (bajos.isNotEmpty)
                 SliverToBoxAdapter(
                   child: CupertinoListSection.insetGrouped(
+                    backgroundColor: AppColors.background,
                     header: const SectionHeader('Stock bajo'),
                     footer: const Text('Productos con 8 unidades o menos.'),
                     children: [
@@ -2235,7 +2617,7 @@ class MenuScreen extends StatelessWidget {
                             iconoRespaldo: p.icono,
                             categoria: p.categoria,
                             size: 40,
-                            radius: 9,
+                            radius: 10,
                           ),
                           title: Text(p.nombre),
                           subtitle: Text(p.marca),
@@ -2258,7 +2640,8 @@ class MenuScreen extends StatelessWidget {
                       CupertinoButton(
                         padding: const EdgeInsets.symmetric(horizontal: 12),
                         onPressed: onVerProductos,
-                        child: const Text('Ver todos', style: TextStyle(fontSize: 15)),
+                        child: const Text('Ver todos',
+                            style: TextStyle(fontSize: 15)),
                       ),
                     ],
                   ),
@@ -2281,7 +2664,8 @@ class MenuScreen extends StatelessWidget {
                 ),
               ),
               SliverToBoxAdapter(
-                child: SizedBox(height: MediaQuery.of(context).padding.bottom + 32),
+                child: SizedBox(
+                    height: MediaQuery.of(context).padding.bottom + 32),
               ),
             ],
           );
@@ -2307,9 +2691,12 @@ class _AvatarBoton extends StatelessWidget {
           width: 34,
           height: 34,
           alignment: Alignment.center,
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             gradient: AppColors.brandGradient,
             shape: BoxShape.circle,
+            border: Border.all(
+                color: CupertinoColors.white.withValues(alpha: 0.6),
+                width: 1.5),
           ),
           child: Text(
             u.iniciales,
@@ -2333,37 +2720,41 @@ class _Saludo extends StatelessWidget {
   Widget build(BuildContext context) {
     return ValueListenableBuilder<Usuario>(
       valueListenable: AppData.usuario,
-      builder: (_, u, __) => Padding(
-        padding: const EdgeInsets.fromLTRB(20, 2, 20, 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              fecha.toUpperCase(),
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                letterSpacing: 0.6,
-                color: AppColors.secondaryLabel,
-              ),
+      builder: (_, u, __) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            fecha.toUpperCase(),
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.6,
+              color: Color(0xFF67E8F9),
             ),
-            const SizedBox(height: 4),
-            Text('Hola, ${u.nombre.split(' ').first}', style: AppText.title),
-          ],
-        ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Hola, ${u.nombre.split(' ').first}',
+            style: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.w700,
+              color: CupertinoColors.white,
+            ),
+          ),
+        ],
       ),
     );
   }
 }
 
-/// Tarjeta oscura con el valor total del inventario
-class _ResumenCard extends StatelessWidget {
+/// Tarjeta translúcida con el valor total del inventario
+class _Resumen extends StatelessWidget {
   final int productos;
   final int unidades;
   final double valor;
   final int stockBajo;
 
-  const _ResumenCard({
+  const _Resumen({
     required this.productos,
     required this.unidades,
     required this.valor,
@@ -2372,21 +2763,13 @@ class _ResumenCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final valorTexto = Producto.soles(valor);
-
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20),
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        gradient: AppColors.heroGradient,
+        color: CupertinoColors.white.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(22),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primaryDark.withValues(alpha: 0.25),
-            blurRadius: 24,
-            offset: const Offset(0, 12),
-          ),
-        ],
+        border:
+            Border.all(color: CupertinoColors.white.withValues(alpha: 0.15)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -2397,15 +2780,12 @@ class _ResumenCard extends StatelessWidget {
                 'Valor del inventario',
                 style: TextStyle(
                   fontSize: 14,
-                  color: CupertinoColors.white.withValues(alpha: 0.7),
+                  color: CupertinoColors.white.withValues(alpha: 0.75),
                 ),
               ),
               const Spacer(),
-              Icon(
-                CupertinoIcons.chart_bar_alt_fill,
-                size: 18,
-                color: CupertinoColors.white.withValues(alpha: 0.7),
-              ),
+              const Icon(CupertinoIcons.chart_bar_alt_fill,
+                  size: 18, color: Color(0xFF67E8F9)),
             ],
           ),
           const SizedBox(height: 6),
@@ -2413,7 +2793,7 @@ class _ResumenCard extends StatelessWidget {
             fit: BoxFit.scaleDown,
             alignment: Alignment.centerLeft,
             child: Text(
-              valorTexto,
+              Producto.soles(valor),
               style: const TextStyle(
                 fontSize: 32,
                 fontWeight: FontWeight.w700,
@@ -2422,17 +2802,22 @@ class _ResumenCard extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 18),
-          Container(height: 0.5, color: CupertinoColors.white.withValues(alpha: 0.2)),
-          const SizedBox(height: 14),
+          const SizedBox(height: 16),
           Row(
             children: [
-              _Dato(valor: '$productos', etiqueta: 'Productos'),
-              _Dato(valor: '$unidades', etiqueta: 'Unidades'),
+              _Dato(
+                  valor: '$productos',
+                  etiqueta: 'Productos',
+                  icono: CupertinoIcons.cube_box_fill),
+              _Dato(
+                  valor: '$unidades',
+                  etiqueta: 'Unidades',
+                  icono: CupertinoIcons.layers_alt_fill),
               _Dato(
                 valor: '$stockBajo',
                 etiqueta: 'Stock bajo',
-                color: stockBajo > 0 ? const Color(0xFFFFB340) : null,
+                icono: CupertinoIcons.exclamationmark_triangle_fill,
+                color: stockBajo > 0 ? const Color(0xFFFCD34D) : null,
               ),
             ],
           ),
@@ -2445,32 +2830,138 @@ class _ResumenCard extends StatelessWidget {
 class _Dato extends StatelessWidget {
   final String valor;
   final String etiqueta;
+  final IconData icono;
   final Color? color;
-  const _Dato({required this.valor, required this.etiqueta, this.color});
+  const _Dato(
+      {required this.valor,
+      required this.etiqueta,
+      required this.icono,
+      this.color});
 
   @override
   Widget build(BuildContext context) {
     return Expanded(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          Text(
-            valor,
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w700,
-              color: color ?? CupertinoColors.white,
+          Container(
+            width: 30,
+            height: 30,
+            decoration: BoxDecoration(
+              color: CupertinoColors.white.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(9),
             ),
+            child:
+                Icon(icono, size: 15, color: color ?? const Color(0xFF67E8F9)),
           ),
-          const SizedBox(height: 2),
-          Text(
-            etiqueta,
-            style: TextStyle(
-              fontSize: 12,
-              color: CupertinoColors.white.withValues(alpha: 0.6),
+          const SizedBox(width: 8),
+          Flexible(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  valor,
+                  style: TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
+                    color: color ?? CupertinoColors.white,
+                  ),
+                ),
+                Text(
+                  etiqueta,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: CupertinoColors.white.withValues(alpha: 0.6),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Acceso rápido con degradado frío
+class _Acceso extends StatelessWidget {
+  final IconData icono;
+  final String titulo;
+  final String subtitulo;
+  final LinearGradient degradado;
+  final VoidCallback onTap;
+
+  const _Acceso({
+    required this.icono,
+    required this.titulo,
+    required this.subtitulo,
+    required this.degradado,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoButton(
+      padding: EdgeInsets.zero,
+      pressedOpacity: 0.75,
+      onPressed: onTap,
+      child: Container(
+        width: double.infinity,
+        height: double.infinity,
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          gradient: degradado,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: degradado.colors.last.withValues(alpha: 0.3),
+              blurRadius: 14,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: CupertinoColors.white.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(11),
+                  ),
+                  child: Icon(icono, color: CupertinoColors.white, size: 20),
+                ),
+                const Spacer(),
+                Icon(
+                  CupertinoIcons.arrow_up_right,
+                  size: 16,
+                  color: CupertinoColors.white.withValues(alpha: 0.7),
+                ),
+              ],
+            ),
+            const Spacer(),
+            Text(
+              titulo,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                color: CupertinoColors.white,
+              ),
+            ),
+            Text(
+              subtitulo,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                  fontSize: 12,
+                  color: CupertinoColors.white.withValues(alpha: 0.8)),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -2512,7 +3003,10 @@ class _DestacadoCard extends StatelessWidget {
               producto.nombre,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.label),
+              style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.label),
             ),
             const SizedBox(height: 2),
             Text(
@@ -2563,65 +3057,83 @@ class _PerfilScreenState extends State<PerfilScreen> {
         valueListenable: AppData.usuario,
         builder: (context, u, _) => CustomScrollView(
           slivers: [
-            CupertinoSliverNavigationBar(
-              largeTitle: const Text('Perfil'),
-              middle: const Text('Perfil'),
-              alwaysShowMiddle: false,
-              border: null,
-              backgroundColor: AppColors.background.withValues(alpha: 0.9),
-              trailing: CupertinoButton(
-                padding: EdgeInsets.zero,
-                onPressed: _editar,
-                child: const Text('Editar'),
-              ),
+            AppSliverNavBar(
+              titulo: 'Perfil',
+              trailing: NavTextButton('Editar', onPressed: _editar),
             ),
-            SliverToBoxAdapter(child: _Encabezado(usuario: u)),
 
-            // Resumen de actividad
+            // Encabezado azul con el avatar y el resumen de actividad
             SliverToBoxAdapter(
-              child: ValueListenableBuilder<List<Producto>>(
-                valueListenable: AppData.productos,
-                builder: (_, lista, __) => Container(
-                  margin: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  decoration: BoxDecoration(
-                    color: AppColors.card,
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: Row(
-                    children: [
-                      _Resumen(valor: '${lista.length}', etiqueta: 'Productos'),
-                      _divisor(),
-                      _Resumen(valor: '${AppData.totalUnidades}', etiqueta: 'Unidades'),
-                      _divisor(),
-                      _Resumen(valor: _compacto(AppData.valorInventario), etiqueta: 'Inventario'),
-                    ],
-                  ),
+              child: GradientHeader(
+                child: Column(
+                  children: [
+                    _Encabezado(usuario: u),
+                    const SizedBox(height: 20),
+                    ValueListenableBuilder<List<Producto>>(
+                      valueListenable: AppData.productos,
+                      builder: (_, lista, __) => Container(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        decoration: BoxDecoration(
+                          color: CupertinoColors.white.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(18),
+                          border: Border.all(
+                            color:
+                                CupertinoColors.white.withValues(alpha: 0.15),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            _Resumen(
+                                valor: '${lista.length}',
+                                etiqueta: 'Productos'),
+                            _divisor(),
+                            _Resumen(
+                                valor: '${AppData.totalUnidades}',
+                                etiqueta: 'Unidades'),
+                            _divisor(),
+                            _Resumen(
+                              valor: _compacto(AppData.valorInventario),
+                              etiqueta: 'Inventario',
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
 
             SliverToBoxAdapter(
               child: CupertinoListSection.insetGrouped(
+                backgroundColor: AppColors.background,
                 header: const SectionHeader('Información personal'),
                 children: [
                   CupertinoListTile(
-                    leading: const IconBox(icon: CupertinoIcons.person_fill, color: AppColors.primary),
+                    leading: const IconBox(
+                        icon: CupertinoIcons.person_fill,
+                        color: AppColors.primary),
                     title: const Text('Nombre'),
                     additionalInfo: _Info(u.nombre),
                   ),
                   CupertinoListTile(
-                    leading: const IconBox(icon: CupertinoIcons.envelope_fill, color: AppColors.blue),
+                    leading: const IconBox(
+                        icon: CupertinoIcons.envelope_fill,
+                        color: AppColors.primary),
                     title: const Text('Email'),
                     additionalInfo: _Info(u.email),
                   ),
                   CupertinoListTile(
-                    leading: const IconBox(icon: CupertinoIcons.phone_fill, color: AppColors.success),
+                    leading: const IconBox(
+                        icon: CupertinoIcons.phone_fill,
+                        color: AppColors.success),
                     title: const Text('Teléfono'),
                     additionalInfo: _Info(u.telefono),
                   ),
                   CupertinoListTile(
-                    leading: const IconBox(icon: CupertinoIcons.shield_fill, color: AppColors.warning),
+                    leading: const IconBox(
+                        icon: CupertinoIcons.shield_fill,
+                        color: AppColors.warning),
                     title: const Text('Rol'),
                     additionalInfo: _Info(u.rol),
                   ),
@@ -2631,10 +3143,13 @@ class _PerfilScreenState extends State<PerfilScreen> {
 
             SliverToBoxAdapter(
               child: CupertinoListSection.insetGrouped(
+                backgroundColor: AppColors.background,
                 header: const SectionHeader('Preferencias'),
                 children: [
                   CupertinoListTile(
-                    leading: const IconBox(icon: CupertinoIcons.bell_fill, color: AppColors.danger),
+                    leading: const IconBox(
+                        icon: CupertinoIcons.bell_fill,
+                        color: AppColors.danger),
                     title: const Text('Notificaciones'),
                     trailing: CupertinoSwitch(
                       value: _notificaciones,
@@ -2655,9 +3170,11 @@ class _PerfilScreenState extends State<PerfilScreen> {
                         setState(() => _alertasStock = v);
                         AppToast.show(
                           context,
-                          v ? 'Alertas de stock activadas' : 'Alertas de stock desactivadas',
+                          v
+                              ? 'Alertas de stock activadas'
+                              : 'Alertas de stock desactivadas',
                           icono: CupertinoIcons.bell_fill,
-                          color: v ? AppColors.success : AppColors.grey,
+                          color: v ? AppColors.success : AppColors.slate,
                         );
                       },
                     ),
@@ -2668,10 +3185,12 @@ class _PerfilScreenState extends State<PerfilScreen> {
 
             SliverToBoxAdapter(
               child: CupertinoListSection.insetGrouped(
+                backgroundColor: AppColors.background,
                 header: const SectionHeader('Cuenta'),
                 children: [
                   CupertinoListTile(
-                    leading: const IconBox(icon: CupertinoIcons.pencil, color: AppColors.grey),
+                    leading: const IconBox(
+                        icon: CupertinoIcons.pencil, color: AppColors.slate),
                     title: const Text('Editar perfil'),
                     trailing: const CupertinoListTileChevron(),
                     onTap: _editar,
@@ -2681,7 +3200,8 @@ class _PerfilScreenState extends State<PerfilScreen> {
                       icon: CupertinoIcons.square_arrow_right,
                       color: AppColors.danger,
                     ),
-                    title: const Text('Cerrar sesión', style: TextStyle(color: AppColors.danger)),
+                    title: const Text('Cerrar sesión',
+                        style: TextStyle(color: AppColors.danger)),
                     onTap: () => AppRoutes.cerrarSesion(context),
                   ),
                 ],
@@ -2707,7 +3227,11 @@ class _PerfilScreenState extends State<PerfilScreen> {
     );
   }
 
-  Widget _divisor() => Container(width: 0.5, height: 34, color: AppColors.separator);
+  Widget _divisor() => Container(
+        width: 0.5,
+        height: 34,
+        color: CupertinoColors.white.withValues(alpha: 0.25),
+      );
 }
 
 class _Encabezado extends StatelessWidget {
@@ -2718,7 +3242,6 @@ class _Encabezado extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        const SizedBox(height: 8),
         Container(
           width: 96,
           height: 96,
@@ -2726,10 +3249,12 @@ class _Encabezado extends StatelessWidget {
           decoration: BoxDecoration(
             gradient: AppColors.brandGradient,
             shape: BoxShape.circle,
+            border: Border.all(
+                color: CupertinoColors.white.withValues(alpha: 0.7), width: 3),
             boxShadow: [
               BoxShadow(
-                color: AppColors.primary.withValues(alpha: 0.3),
-                blurRadius: 20,
+                color: AppColors.cyan.withValues(alpha: 0.4),
+                blurRadius: 24,
                 offset: const Offset(0, 8),
               ),
             ],
@@ -2744,27 +3269,41 @@ class _Encabezado extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 14),
-        Text(usuario.nombre, style: AppText.title),
+        Text(
+          usuario.nombre,
+          style: const TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.w700,
+            color: CupertinoColors.white,
+          ),
+        ),
         const SizedBox(height: 2),
-        Text(usuario.email, style: AppText.subhead),
+        Text(
+          usuario.email,
+          style: TextStyle(
+              fontSize: 14,
+              color: CupertinoColors.white.withValues(alpha: 0.75)),
+        ),
         const SizedBox(height: 10),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
           decoration: BoxDecoration(
-            color: AppColors.primary.withValues(alpha: 0.1),
+            color: AppColors.cyan.withValues(alpha: 0.2),
             borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: AppColors.cyan.withValues(alpha: 0.4)),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(CupertinoIcons.checkmark_seal_fill, size: 14, color: AppColors.primary),
+              const Icon(CupertinoIcons.checkmark_seal_fill,
+                  size: 14, color: Color(0xFF67E8F9)),
               const SizedBox(width: 4),
               Text(
                 usuario.rol,
                 style: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.primary,
+                  color: Color(0xFF67E8F9),
                 ),
               ),
             ],
@@ -2787,10 +3326,22 @@ class _Resumen extends StatelessWidget {
         children: [
           FittedBox(
             fit: BoxFit.scaleDown,
-            child: Text(valor, style: AppText.headline),
+            child: Text(
+              valor,
+              style: const TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.w700,
+                color: CupertinoColors.white,
+              ),
+            ),
           ),
           const SizedBox(height: 2),
-          Text(etiqueta, style: AppText.caption),
+          Text(
+            etiqueta,
+            style: TextStyle(
+                fontSize: 12,
+                color: CupertinoColors.white.withValues(alpha: 0.65)),
+          ),
         ],
       ),
     );
@@ -2824,7 +3375,8 @@ class RegistrarProductoScreen extends StatefulWidget {
   const RegistrarProductoScreen({super.key, this.productoEditar});
 
   @override
-  State<RegistrarProductoScreen> createState() => _RegistrarProductoScreenState();
+  State<RegistrarProductoScreen> createState() =>
+      _RegistrarProductoScreenState();
 }
 
 class _RegistrarProductoScreenState extends State<RegistrarProductoScreen> {
@@ -2847,12 +3399,19 @@ class _RegistrarProductoScreenState extends State<RegistrarProductoScreen> {
     _nombreCtrl = TextEditingController(text: p?.nombre ?? '');
     _marcaCtrl = TextEditingController(text: p?.marca ?? '');
     _descCtrl = TextEditingController(text: p?.descripcion ?? '');
-    _precioCtrl = TextEditingController(text: p == null ? '' : p.precio.toStringAsFixed(2));
+    _precioCtrl = TextEditingController(
+        text: p == null ? '' : p.precio.toStringAsFixed(2));
     _stockCtrl = TextEditingController(text: p == null ? '1' : '${p.stock}');
     _categoria = p?.categoria ?? 'Laptops';
     _imagenUrl = p?.imagenUrl;
 
-    for (final c in [_nombreCtrl, _marcaCtrl, _descCtrl, _precioCtrl, _stockCtrl]) {
+    for (final c in [
+      _nombreCtrl,
+      _marcaCtrl,
+      _descCtrl,
+      _precioCtrl,
+      _stockCtrl
+    ]) {
       c.addListener(_marcarModificado);
     }
   }
@@ -2881,7 +3440,9 @@ class _RegistrarProductoScreenState extends State<RegistrarProductoScreen> {
   Producto _productoActual() {
     return Producto(
       id: widget.productoEditar?.id ?? AppData.nuevoId(),
-      nombre: _nombreCtrl.text.trim().isEmpty ? 'Nombre del producto' : _nombreCtrl.text.trim(),
+      nombre: _nombreCtrl.text.trim().isEmpty
+          ? 'Nombre del producto'
+          : _nombreCtrl.text.trim(),
       marca: _marcaCtrl.text.trim(),
       descripcion: _descCtrl.text.trim(),
       precio: double.tryParse(_precioCtrl.text) ?? 0,
@@ -3073,7 +3634,8 @@ class _RegistrarProductoScreenState extends State<RegistrarProductoScreen> {
                       });
                       Navigator.pop(ctx);
                     },
-                    child: const Text('Listo', style: TextStyle(fontWeight: FontWeight.w600)),
+                    child: const Text('Listo',
+                        style: TextStyle(fontWeight: FontWeight.w600)),
                   ),
                 ],
               ),
@@ -3081,14 +3643,16 @@ class _RegistrarProductoScreenState extends State<RegistrarProductoScreen> {
               Expanded(
                 child: CupertinoPicker(
                   itemExtent: 40,
-                  scrollController: FixedExtentScrollController(initialItem: indice),
+                  scrollController:
+                      FixedExtentScrollController(initialItem: indice),
                   onSelectedItemChanged: (i) => indice = i,
                   children: [
                     for (final c in categorias)
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(AppData.iconoDe(c), size: 20, color: AppColors.categoria(c)),
+                          Icon(AppData.iconoDe(c),
+                              size: 20, color: AppColors.categoria(c)),
                           const SizedBox(width: 10),
                           Text(c),
                         ],
@@ -3109,17 +3673,12 @@ class _RegistrarProductoScreenState extends State<RegistrarProductoScreen> {
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
       navigationBar: CupertinoNavigationBar(
-        leading: CupertinoButton(
-          padding: EdgeInsets.zero,
-          onPressed: _cancelar,
-          child: const Text('Cancelar'),
-        ),
+        border: null,
+        automaticBackgroundVisibility: false,
+        brightness: Brightness.dark,
+        leading: NavTextButton('Cancelar', onPressed: _cancelar),
         middle: Text(_editando ? 'Editar producto' : 'Nuevo producto'),
-        trailing: CupertinoButton(
-          padding: EdgeInsets.zero,
-          onPressed: _guardar,
-          child: const Text('Guardar', style: TextStyle(fontWeight: FontWeight.w600)),
-        ),
+        trailing: NavTextButton('Guardar', onPressed: _guardar, negrita: true),
       ),
       child: SafeArea(
         child: GestureDetector(
@@ -3132,6 +3691,7 @@ class _RegistrarProductoScreenState extends State<RegistrarProductoScreen> {
                 _selectorFoto(),
 
                 CupertinoFormSection.insetGrouped(
+                  backgroundColor: AppColors.background,
                   header: const SectionHeader('Información'),
                   children: [
                     CupertinoTextFormFieldRow(
@@ -3140,7 +3700,8 @@ class _RegistrarProductoScreenState extends State<RegistrarProductoScreen> {
                       placeholder: 'Ej. MacBook Air 13"',
                       textInputAction: TextInputAction.next,
                       validator: (v) {
-                        if (v == null || v.trim().isEmpty) return 'El nombre es obligatorio';
+                        if (v == null || v.trim().isEmpty)
+                          return 'El nombre es obligatorio';
                         if (v.trim().length < 3) return 'Mínimo 3 caracteres';
                         return null;
                       },
@@ -3165,7 +3726,8 @@ class _RegistrarProductoScreenState extends State<RegistrarProductoScreen> {
                               color: AppColors.categoria(_categoria),
                             ),
                             const SizedBox(width: 6),
-                            Text(_categoria, style: const TextStyle(color: AppColors.label)),
+                            Text(_categoria,
+                                style: const TextStyle(color: AppColors.label)),
                             const SizedBox(width: 4),
                             const Icon(
                               CupertinoIcons.chevron_up_chevron_down,
@@ -3188,6 +3750,7 @@ class _RegistrarProductoScreenState extends State<RegistrarProductoScreen> {
                 ),
 
                 CupertinoFormSection.insetGrouped(
+                  backgroundColor: AppColors.background,
                   header: const SectionHeader('Precio y stock'),
                   footer: const Text('El precio se registra en soles (S/).'),
                   children: [
@@ -3195,9 +3758,11 @@ class _RegistrarProductoScreenState extends State<RegistrarProductoScreen> {
                       controller: _precioCtrl,
                       prefix: const _Etiqueta('Precio'),
                       placeholder: '0.00',
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      keyboardType:
+                          const TextInputType.numberWithOptions(decimal: true),
                       inputFormatters: [
-                        FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
+                        FilteringTextInputFormatter.allow(
+                            RegExp(r'^\d*\.?\d{0,2}')),
                       ],
                       validator: (v) {
                         final precio = double.tryParse(v ?? '');
@@ -3211,7 +3776,9 @@ class _RegistrarProductoScreenState extends State<RegistrarProductoScreen> {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          _BotonPaso(icon: CupertinoIcons.minus, onTap: () => _cambiarStock(-1)),
+                          _BotonPaso(
+                              icon: CupertinoIcons.minus,
+                              onTap: () => _cambiarStock(-1)),
                           SizedBox(
                             width: 64,
                             child: CupertinoTextField.borderless(
@@ -3225,7 +3792,9 @@ class _RegistrarProductoScreenState extends State<RegistrarProductoScreen> {
                               style: AppText.headline,
                             ),
                           ),
-                          _BotonPaso(icon: CupertinoIcons.plus, onTap: () => _cambiarStock(1)),
+                          _BotonPaso(
+                              icon: CupertinoIcons.plus,
+                              onTap: () => _cambiarStock(1)),
                         ],
                       ),
                     ),
@@ -3234,8 +3803,8 @@ class _RegistrarProductoScreenState extends State<RegistrarProductoScreen> {
 
                 // Vista previa: se actualiza mientras escribes
                 CupertinoListSection.insetGrouped(
-                  header: const SectionHeader('Vista previa'),
                   backgroundColor: AppColors.background,
+                  header: const SectionHeader('Vista previa'),
                   decoration: const BoxDecoration(),
                   children: [
                     ListenableBuilder(
@@ -3277,8 +3846,8 @@ class _RegistrarProductoScreenState extends State<RegistrarProductoScreen> {
   Widget _selectorFoto() {
     final tieneFoto = _imagenUrl != null && _imagenUrl!.isNotEmpty;
 
-    return Padding(
-      padding: const EdgeInsets.only(top: 20),
+    return GradientHeader(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 14),
       child: Column(
         children: [
           CupertinoButton(
@@ -3324,9 +3893,10 @@ class _RegistrarProductoScreenState extends State<RegistrarProductoScreen> {
                     width: 36,
                     height: 36,
                     decoration: BoxDecoration(
-                      color: AppColors.primary,
                       shape: BoxShape.circle,
-                      border: Border.all(color: AppColors.background, width: 3),
+                      gradient: AppColors.brandGradient,
+                      border:
+                          Border.all(color: CupertinoColors.white, width: 3),
                     ),
                     child: Icon(
                       tieneFoto ? CupertinoIcons.pencil : CupertinoIcons.plus,
@@ -3344,7 +3914,11 @@ class _RegistrarProductoScreenState extends State<RegistrarProductoScreen> {
             onPressed: _opcionesFoto,
             child: Text(
               tieneFoto ? 'Cambiar foto' : 'Agregar foto',
-              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w500,
+                color: Color(0xFF67E8F9),
+              ),
             ),
           ),
         ],
@@ -3362,7 +3936,8 @@ class _Etiqueta extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: 100,
-      child: Text(texto, style: const TextStyle(fontSize: 16, color: AppColors.label)),
+      child: Text(texto,
+          style: const TextStyle(fontSize: 16, color: AppColors.label)),
     );
   }
 }
@@ -3406,13 +3981,17 @@ class _GaleriaSheetState extends State<_GaleriaSheet> {
   @override
   void initState() {
     super.initState();
-    final hayFotos = AppData.galeria.any((f) => f.categoria == widget.categoriaActual);
+    final hayFotos =
+        AppData.galeria.any((f) => f.categoria == widget.categoriaActual);
     _filtro = hayFotos ? widget.categoriaActual : 'Todas';
   }
 
   @override
   Widget build(BuildContext context) {
-    final cats = ['Todas', ...{for (final f in AppData.galeria) f.categoria}];
+    final cats = [
+      'Todas',
+      ...{for (final f in AppData.galeria) f.categoria}
+    ];
     final fotos = AppData.galeria
         .where((f) => _filtro == 'Todas' || f.categoria == _filtro)
         .toList();
@@ -3453,7 +4032,8 @@ class _GaleriaSheetState extends State<_GaleriaSheet> {
               height: 44,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                 itemCount: cats.length,
                 separatorBuilder: (_, __) => const SizedBox(width: 8),
                 itemBuilder: (_, i) {
@@ -3473,7 +4053,8 @@ class _GaleriaSheetState extends State<_GaleriaSheet> {
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: activa ? CupertinoColors.white : AppColors.label,
+                          color:
+                              activa ? CupertinoColors.white : AppColors.label,
                         ),
                       ),
                     ),
@@ -3513,7 +4094,9 @@ class _GaleriaSheetState extends State<_GaleriaSheet> {
                                 url: foto.url,
                                 iconoRespaldo: AppData.iconoDe(foto.categoria),
                                 categoria: foto.categoria,
-                                size: c.maxWidth < c.maxHeight ? c.maxWidth : c.maxHeight,
+                                size: c.maxWidth < c.maxHeight
+                                    ? c.maxWidth
+                                    : c.maxHeight,
                                 radius: 10,
                               ),
                             ),
@@ -3523,7 +4106,8 @@ class _GaleriaSheetState extends State<_GaleriaSheet> {
                             foto.nombre,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+                            style: const TextStyle(
+                                fontSize: 12, fontWeight: FontWeight.w500),
                           ),
                         ],
                       ),

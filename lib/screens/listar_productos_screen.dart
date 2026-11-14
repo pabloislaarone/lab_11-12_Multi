@@ -8,6 +8,7 @@ import '../models/producto.dart';
 import '../routes/app_routes.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_toast.dart';
+import '../widgets/gradient_header.dart';
 import '../widgets/producto_tile.dart';
 import 'detalle_producto_screen.dart';
 
@@ -60,7 +61,8 @@ class _ListarProductosScreenState extends State<ListarProductosScreen> {
 
     switch (_orden) {
       case Orden.nombre:
-        lista.sort((a, b) => a.nombre.toLowerCase().compareTo(b.nombre.toLowerCase()));
+        lista.sort(
+            (a, b) => a.nombre.toLowerCase().compareTo(b.nombre.toLowerCase()));
       case Orden.precioMayor:
         lista.sort((a, b) => b.precio.compareTo(a.precio));
       case Orden.precioMenor:
@@ -97,7 +99,8 @@ class _ListarProductosScreenState extends State<ListarProductosScreen> {
           CupertinoActionSheetAction(
             onPressed: () {
               Navigator.pop(ctx);
-              AppRoutes.abrir(context, AppRoutes.registrarProducto, arguments: p);
+              AppRoutes.abrir(context, AppRoutes.registrarProducto,
+                  arguments: p);
             },
             child: const Text('Editar'),
           ),
@@ -144,6 +147,19 @@ class _ListarProductosScreenState extends State<ListarProductosScreen> {
     );
   }
 
+  /// Texto del filtro: oscuro si está elegido, blanco si no
+  Widget _segmento(String texto, int valor) {
+    final activo = _filtroStock == valor;
+    return Text(
+      texto,
+      style: TextStyle(
+        fontSize: 14,
+        fontWeight: activo ? FontWeight.w600 : FontWeight.w500,
+        color: activo ? AppColors.navy : CupertinoColors.white,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final categorias = ['Todas', ...AppData.categorias.keys];
@@ -155,23 +171,21 @@ class _ListarProductosScreenState extends State<ListarProductosScreen> {
           final lista = _filtrar(todos);
 
           return CustomScrollView(
-            physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+            physics: const BouncingScrollPhysics(
+                parent: AlwaysScrollableScrollPhysics()),
             slivers: [
-              CupertinoSliverNavigationBar(
-                largeTitle: const Text('Productos'),
-                middle: const Text('Productos'),
-                alwaysShowMiddle: false,
-                backgroundColor: AppColors.background.withValues(alpha: 0.9),
-                border: null,
-                leading: CupertinoButton(
-                  padding: EdgeInsets.zero,
+              AppSliverNavBar(
+                titulo: 'Productos',
+                leading: NavIconButton(
+                  CupertinoIcons.arrow_up_arrow_down,
+                  size: 22,
                   onPressed: _elegirOrden,
-                  child: const Icon(CupertinoIcons.arrow_up_arrow_down, size: 22),
                 ),
-                trailing: CupertinoButton(
-                  padding: EdgeInsets.zero,
-                  onPressed: () => AppRoutes.abrir(context, AppRoutes.registrarProducto),
-                  child: const Icon(CupertinoIcons.plus_circle_fill, size: 28),
+                trailing: NavIconButton(
+                  CupertinoIcons.plus_circle_fill,
+                  size: 28,
+                  onPressed: () =>
+                      AppRoutes.abrir(context, AppRoutes.registrarProducto),
                 ),
               ),
 
@@ -179,26 +193,36 @@ class _ListarProductosScreenState extends State<ListarProductosScreen> {
               CupertinoSliverRefreshControl(
                 onRefresh: () async {
                   await Future.delayed(const Duration(milliseconds: 900));
-                  if (context.mounted) AppToast.show(context, 'Inventario actualizado');
+                  if (context.mounted)
+                    AppToast.show(context, 'Inventario actualizado');
                 },
               ),
 
+              // Encabezado azul con buscador y filtro de stock
               SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
+                child: GradientHeader(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Padding(
-                        padding: const EdgeInsets.only(left: 4, bottom: 10),
-                        child: Text(
-                          '${todos.length} productos · ${AppData.totalUnidades} unidades',
-                          style: AppText.subhead,
+                      Text(
+                        '${todos.length} productos · ${AppData.totalUnidades} unidades',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: CupertinoColors.white.withValues(alpha: 0.75),
                         ),
                       ),
+                      const SizedBox(height: 12),
                       CupertinoSearchTextField(
                         controller: _buscarCtrl,
                         placeholder: 'Buscar por nombre o marca',
+                        backgroundColor:
+                            CupertinoColors.white.withValues(alpha: 0.14),
+                        style: const TextStyle(color: CupertinoColors.white),
+                        placeholderStyle: TextStyle(
+                          color: CupertinoColors.white.withValues(alpha: 0.6),
+                        ),
+                        itemColor:
+                            CupertinoColors.white.withValues(alpha: 0.75),
                         onChanged: (v) => setState(() => _busqueda = v),
                       ),
                       const SizedBox(height: 12),
@@ -206,11 +230,15 @@ class _ListarProductosScreenState extends State<ListarProductosScreen> {
                         width: double.infinity,
                         child: CupertinoSlidingSegmentedControl<int>(
                           groupValue: _filtroStock,
-                          onValueChanged: (v) => setState(() => _filtroStock = v ?? 0),
-                          children: const {
-                            0: Text('Todos'),
-                            1: Text('Disponibles'),
-                            2: Text('Stock bajo'),
+                          backgroundColor:
+                              CupertinoColors.white.withValues(alpha: 0.14),
+                          thumbColor: CupertinoColors.white,
+                          onValueChanged: (v) =>
+                              setState(() => _filtroStock = v ?? 0),
+                          children: {
+                            0: _segmento('Todos', 0),
+                            1: _segmento('Disponibles', 1),
+                            2: _segmento('Stock bajo', 2),
                           },
                         ),
                       ),
@@ -225,7 +253,8 @@ class _ListarProductosScreenState extends State<ListarProductosScreen> {
                   height: 52,
                   child: ListView.separated(
                     scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 10),
                     itemCount: categorias.length,
                     separatorBuilder: (_, __) => const SizedBox(width: 8),
                     itemBuilder: (_, i) => _Pildora(
@@ -242,7 +271,8 @@ class _ListarProductosScreenState extends State<ListarProductosScreen> {
                   hasScrollBody: false,
                   child: _ListaVacia(
                     hayFiltros: todos.isNotEmpty,
-                    onRegistrar: () => AppRoutes.abrir(context, AppRoutes.registrarProducto),
+                    onRegistrar: () =>
+                        AppRoutes.abrir(context, AppRoutes.registrarProducto),
                   ),
                 )
               else
@@ -262,8 +292,10 @@ class _ListarProductosScreenState extends State<ListarProductosScreen> {
                       return Dismissible(
                         key: ValueKey(p.id),
                         direction: DismissDirection.endToStart,
-                        confirmDismiss: (_) => DetalleProductoScreen.preguntarEliminar(context, p),
-                        onDismissed: (_) => DetalleProductoScreen.eliminar(context, p),
+                        confirmDismiss: (_) =>
+                            DetalleProductoScreen.preguntarEliminar(context, p),
+                        onDismissed: (_) =>
+                            DetalleProductoScreen.eliminar(context, p),
                         background: Container(
                           alignment: Alignment.centerRight,
                           padding: const EdgeInsets.only(right: 24),
@@ -274,7 +306,8 @@ class _ListarProductosScreenState extends State<ListarProductosScreen> {
                           child: const Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(CupertinoIcons.trash, color: CupertinoColors.white),
+                              Icon(CupertinoIcons.trash,
+                                  color: CupertinoColors.white),
                               SizedBox(height: 2),
                               Text(
                                 'Eliminar',
@@ -309,7 +342,8 @@ class _Pildora extends StatelessWidget {
   final bool activa;
   final VoidCallback onTap;
 
-  const _Pildora({required this.texto, required this.activa, required this.onTap});
+  const _Pildora(
+      {required this.texto, required this.activa, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -321,9 +355,11 @@ class _Pildora extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 14),
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: activa ? AppColors.label : AppColors.card,
+          gradient: activa ? AppColors.brandGradient : null,
+          color: activa ? null : AppColors.card,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: activa ? AppColors.label : AppColors.separator),
+          border: Border.all(
+              color: activa ? const Color(0x00000000) : AppColors.separator),
         ),
         child: Text(
           texto,

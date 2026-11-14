@@ -133,7 +133,8 @@ class StockBadge extends StatelessWidget {
           const SizedBox(width: 5),
           Text(
             stock == 1 ? '1 ud.' : '$stock uds.',
-            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: color),
+            style: TextStyle(
+                fontSize: 12, fontWeight: FontWeight.w600, color: color),
           ),
         ],
       ),

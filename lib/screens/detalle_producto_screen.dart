@@ -6,6 +6,7 @@ import '../models/producto.dart';
 import '../routes/app_routes.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_toast.dart';
+import '../widgets/gradient_header.dart';
 import '../widgets/icon_box.dart';
 import '../widgets/producto_imagen.dart';
 import '../widgets/producto_tile.dart';
@@ -16,7 +17,8 @@ class DetalleProductoScreen extends StatelessWidget {
   const DetalleProductoScreen({super.key, required this.productoId});
 
   /// Confirma y elimina el producto. Devuelve true si se eliminó.
-  static Future<bool> confirmarEliminar(BuildContext context, Producto p) async {
+  static Future<bool> confirmarEliminar(
+      BuildContext context, Producto p) async {
     final ok = await preguntarEliminar(context, p);
     if (!ok) return false;
     if (context.mounted) eliminar(context, p);
@@ -35,7 +37,8 @@ class DetalleProductoScreen extends StatelessWidget {
   }
 
   /// Diálogo de confirmación de iOS. Devuelve true si el usuario acepta.
-  static Future<bool> preguntarEliminar(BuildContext context, Producto p) async {
+  static Future<bool> preguntarEliminar(
+      BuildContext context, Producto p) async {
     final ok = await showCupertinoDialog<bool>(
       context: context,
       builder: (ctx) => CupertinoAlertDialog(
@@ -70,19 +73,28 @@ class DetalleProductoScreen extends StatelessWidget {
         final encontrados = lista.where((p) => p.id == productoId);
         if (encontrados.isEmpty) {
           return const CupertinoPageScaffold(
-            navigationBar: CupertinoNavigationBar(middle: Text('Producto')),
-            child: Center(child: Text('Este producto ya no existe', style: AppText.subhead)),
+            navigationBar:
+                CupertinoNavigationBar(middle: Text('Producto'), border: null),
+            child: Center(
+                child:
+                    Text('Este producto ya no existe', style: AppText.subhead)),
           );
         }
         final p = encontrados.first;
 
         return CupertinoPageScaffold(
           navigationBar: CupertinoNavigationBar(
+            leading: const CupertinoNavigationBarBackButton(
+                color: CupertinoColors.white),
             middle: Text(p.nombre),
-            trailing: CupertinoButton(
-              padding: EdgeInsets.zero,
-              onPressed: () => AppRoutes.abrir(context, AppRoutes.registrarProducto, arguments: p),
-              child: const Text('Editar'),
+            border: null,
+            automaticBackgroundVisibility: false,
+            brightness: Brightness.dark,
+            trailing: NavTextButton(
+              'Editar',
+              onPressed: () => AppRoutes.abrir(
+                  context, AppRoutes.registrarProducto,
+                  arguments: p),
             ),
           ),
           child: SafeArea(
@@ -90,23 +102,31 @@ class DetalleProductoScreen extends StatelessWidget {
               padding: const EdgeInsets.only(bottom: 32),
               children: [
                 // Foto grande
-                Container(
-                  margin: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: AppColors.card,
-                    borderRadius: BorderRadius.circular(24),
-                    boxShadow: AppColors.softShadow,
-                  ),
+                GradientHeader(
+                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
                   child: Center(
-                    child: Hero(
-                      tag: 'producto-${p.id}',
-                      child: ProductoImagen(
-                        url: p.imagenUrl,
-                        iconoRespaldo: p.icono,
-                        categoria: p.categoria,
-                        size: 220,
-                        radius: 20,
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: AppColors.card,
+                        borderRadius: BorderRadius.circular(28),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.navy.withValues(alpha: 0.35),
+                            blurRadius: 30,
+                            offset: const Offset(0, 14),
+                          ),
+                        ],
+                      ),
+                      child: Hero(
+                        tag: 'producto-${p.id}',
+                        child: ProductoImagen(
+                          url: p.imagenUrl,
+                          iconoRespaldo: p.icono,
+                          categoria: p.categoria,
+                          size: 200,
+                          radius: 20,
+                        ),
                       ),
                     ),
                   ),
@@ -118,13 +138,16 @@ class DetalleProductoScreen extends StatelessWidget {
                     children: [
                       Row(
                         children: [
-                          _EtiquetaCategoria(texto: p.categoria, color: AppColors.categoria(p.categoria)),
+                          _EtiquetaCategoria(
+                              texto: p.categoria,
+                              color: AppColors.categoria(p.categoria)),
                           const SizedBox(width: 8),
                           StockBadge(stock: p.stock),
                         ],
                       ),
                       const SizedBox(height: 12),
-                      if (p.marca.isNotEmpty) Text(p.marca, style: AppText.subhead),
+                      if (p.marca.isNotEmpty)
+                        Text(p.marca, style: AppText.subhead),
                       Text(p.nombre, style: AppText.title),
                       const SizedBox(height: 6),
                       Text(
@@ -139,15 +162,20 @@ class DetalleProductoScreen extends StatelessWidget {
                   ),
                 ),
                 CupertinoListSection.insetGrouped(
+                  backgroundColor: AppColors.background,
                   header: const SectionHeader('Inventario'),
                   children: [
                     CupertinoListTile(
-                      leading: const IconBox(icon: CupertinoIcons.tag_fill, color: AppColors.primary),
+                      leading: const IconBox(
+                          icon: CupertinoIcons.tag_fill,
+                          color: AppColors.primary),
                       title: const Text('Precio unitario'),
                       additionalInfo: Text(p.precioFormateado),
                     ),
                     CupertinoListTile(
-                      leading: const IconBox(icon: CupertinoIcons.cube_box_fill, color: AppColors.blue),
+                      leading: const IconBox(
+                          icon: CupertinoIcons.cube_box_fill,
+                          color: AppColors.primary),
                       title: const Text('Unidades en stock'),
                       additionalInfo: Text('${p.stock}'),
                     ),
@@ -162,13 +190,17 @@ class DetalleProductoScreen extends StatelessWidget {
                   ],
                 ),
                 CupertinoListSection.insetGrouped(
+                  backgroundColor: AppColors.background,
                   header: const SectionHeader('Descripción'),
                   children: [
                     Padding(
                       padding: const EdgeInsets.all(16),
                       child: Text(
-                        p.descripcion.isEmpty ? 'Sin descripción.' : p.descripcion,
-                        style: const TextStyle(fontSize: 15, height: 1.45, color: AppColors.label),
+                        p.descripcion.isEmpty
+                            ? 'Sin descripción.'
+                            : p.descripcion,
+                        style: const TextStyle(
+                            fontSize: 15, height: 1.45, color: AppColors.label),
                       ),
                     ),
                   ],
@@ -181,8 +213,9 @@ class DetalleProductoScreen extends StatelessWidget {
                         width: double.infinity,
                         child: CupertinoButton.filled(
                           borderRadius: BorderRadius.circular(14),
-                          onPressed: () =>
-                              AppRoutes.abrir(context, AppRoutes.registrarProducto, arguments: p),
+                          onPressed: () => AppRoutes.abrir(
+                              context, AppRoutes.registrarProducto,
+                              arguments: p),
                           child: const Text('Editar producto'),
                         ),
                       ),
@@ -190,7 +223,8 @@ class DetalleProductoScreen extends StatelessWidget {
                       CupertinoButton(
                         onPressed: () async {
                           final eliminado = await confirmarEliminar(context, p);
-                          if (eliminado && context.mounted) Navigator.pop(context);
+                          if (eliminado && context.mounted)
+                            Navigator.pop(context);
                         },
                         child: const Text(
                           'Eliminar producto',
@@ -224,7 +258,8 @@ class _EtiquetaCategoria extends StatelessWidget {
       ),
       child: Text(
         texto,
-        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: color),
+        style:
+            TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: color),
       ),
     );
   }

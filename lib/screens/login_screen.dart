@@ -34,7 +34,8 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _cargando = true);
-    await Future.delayed(const Duration(milliseconds: 900)); // simula el servidor
+    await Future.delayed(
+        const Duration(milliseconds: 900)); // simula el servidor
     if (!mounted) return;
     setState(() => _cargando = false);
 
@@ -53,7 +54,8 @@ class _LoginScreenState extends State<LoginScreen> {
         title: const Text('No se pudo iniciar sesión'),
         content: const Padding(
           padding: EdgeInsets.only(top: 6),
-          child: Text('El email o la contraseña no son correctos. Inténtalo otra vez.'),
+          child: Text(
+              'El email o la contraseña no son correctos. Inténtalo otra vez.'),
         ),
         actions: [
           CupertinoDialogAction(
@@ -98,101 +100,162 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
-      backgroundColor: AppColors.background,
-      child: GestureDetector(
-        // Tocar fuera de los campos cierra el teclado
-        onTap: () => FocusScope.of(context).unfocus(),
-        child: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(vertical: 24),
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 460),
-                child: Column(
-                  children: [
-                    _encabezado(),
-                    const SizedBox(height: 28),
-                    Form(
-                      key: _formKey,
-                      child: CupertinoFormSection.insetGrouped(
-                        header: const Text('CREDENCIALES'),
-                        footer: Row(
-                          children: [
-                            const Spacer(),
-                            CupertinoButton(
-                              padding: EdgeInsets.zero,
-                              onPressed: _olvideContrasena,
-                              child: const Text(
-                                '¿Olvidaste tu contraseña?',
-                                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+      backgroundColor: AppColors.navy,
+      child: Container(
+        decoration: const BoxDecoration(gradient: AppColors.headerGradient),
+        child: Stack(
+          children: [
+            // Círculos decorativos de fondo
+            Positioned(top: -90, right: -70, child: _circulo(260, 0.14)),
+            Positioned(top: 260, left: -110, child: _circulo(220, 0.08)),
+            Positioned(bottom: -80, right: -60, child: _circulo(240, 0.12)),
+            GestureDetector(
+              // Tocar fuera de los campos cierra el teclado
+              onTap: () => FocusScope.of(context).unfocus(),
+              child: SafeArea(
+                child: Center(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(vertical: 24),
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 460),
+                      child: Column(
+                        children: [
+                          _encabezado(),
+                          const SizedBox(height: 28),
+                          Form(
+                            key: _formKey,
+                            child: CupertinoFormSection.insetGrouped(
+                              backgroundColor: const Color(0x00000000),
+                              header: Text(
+                                'CREDENCIALES',
+                                style: TextStyle(
+                                    color: CupertinoColors.white
+                                        .withValues(alpha: 0.7)),
+                              ),
+                              footer: Row(
+                                children: [
+                                  const Spacer(),
+                                  CupertinoButton(
+                                    padding: EdgeInsets.zero,
+                                    onPressed: _olvideContrasena,
+                                    child: const Text(
+                                      '¿Olvidaste tu contraseña?',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w500,
+                                        color: Color(0xFF67E8F9),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              children: [
+                                CupertinoTextFormFieldRow(
+                                  controller: _emailCtrl,
+                                  prefix: const _Prefijo(
+                                      CupertinoIcons.envelope_fill,
+                                      AppColors.primary),
+                                  placeholder: 'correo@ejemplo.com',
+                                  keyboardType: TextInputType.emailAddress,
+                                  textInputAction: TextInputAction.next,
+                                  autocorrect: false,
+                                  validator: (v) {
+                                    if (v == null || v.trim().isEmpty)
+                                      return 'Ingresa tu email';
+                                    final regex =
+                                        RegExp(r'^[\w.\-]+@[\w\-]+\.[\w.]+$');
+                                    if (!regex.hasMatch(v.trim()))
+                                      return 'El email no es válido';
+                                    return null;
+                                  },
+                                ),
+                                PasswordRow(
+                                  controller: _passCtrl,
+                                  prefix: const _Prefijo(
+                                      CupertinoIcons.lock_fill,
+                                      AppColors.slate),
+                                  onSubmitted: (_) => _iniciarSesion(),
+                                  validator: (v) {
+                                    if (v == null || v.isEmpty)
+                                      return 'Ingresa tu contraseña';
+                                    if (v.length < 6)
+                                      return 'Mínimo 6 caracteres';
+                                    return null;
+                                  },
+                                ),
+                                CupertinoFormRow(
+                                  prefix: const Text('Recordarme'),
+                                  child: CupertinoSwitch(
+                                    value: _recordarme,
+                                    activeTrackColor: AppColors.primary,
+                                    onChanged: (v) =>
+                                        setState(() => _recordarme = v),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            child: SizedBox(
+                              width: double.infinity,
+                              child: CupertinoButton(
+                                padding: EdgeInsets.zero,
+                                onPressed: _cargando ? null : _iniciarSesion,
+                                child: Container(
+                                  height: 54,
+                                  alignment: Alignment.center,
+                                  decoration: BoxDecoration(
+                                    gradient: AppColors.brandGradient,
+                                    borderRadius: BorderRadius.circular(14),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: AppColors.cyan
+                                            .withValues(alpha: 0.35),
+                                        blurRadius: 20,
+                                        offset: const Offset(0, 8),
+                                      ),
+                                    ],
+                                  ),
+                                  child: _cargando
+                                      ? const CupertinoActivityIndicator(
+                                          color: CupertinoColors.white)
+                                      : const Text(
+                                          'Iniciar sesión',
+                                          style: TextStyle(
+                                            color: CupertinoColors.white,
+                                            fontSize: 17,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                ),
                               ),
                             ),
-                          ],
-                        ),
-                        children: [
-                          CupertinoTextFormFieldRow(
-                            controller: _emailCtrl,
-                            prefix: const _Prefijo(CupertinoIcons.envelope_fill, AppColors.blue),
-                            placeholder: 'correo@ejemplo.com',
-                            keyboardType: TextInputType.emailAddress,
-                            textInputAction: TextInputAction.next,
-                            autocorrect: false,
-                            validator: (v) {
-                              if (v == null || v.trim().isEmpty) return 'Ingresa tu email';
-                              final regex = RegExp(r'^[\w.\-]+@[\w\-]+\.[\w.]+$');
-                              if (!regex.hasMatch(v.trim())) return 'El email no es válido';
-                              return null;
-                            },
                           ),
-                          PasswordRow(
-                            controller: _passCtrl,
-                            prefix: const _Prefijo(CupertinoIcons.lock_fill, AppColors.grey),
-                            onSubmitted: (_) => _iniciarSesion(),
-                            validator: (v) {
-                              if (v == null || v.isEmpty) return 'Ingresa tu contraseña';
-                              if (v.length < 6) return 'Mínimo 6 caracteres';
-                              return null;
-                            },
-                          ),
-                          CupertinoFormRow(
-                            prefix: const Text('Recordarme'),
-                            child: CupertinoSwitch(
-                              value: _recordarme,
-                              activeTrackColor: AppColors.primary,
-                              onChanged: (v) => setState(() => _recordarme = v),
-                            ),
-                          ),
+                          const SizedBox(height: 28),
+                          _cuentaDemo(),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 12),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: SizedBox(
-                        width: double.infinity,
-                        child: CupertinoButton.filled(
-                          borderRadius: BorderRadius.circular(14),
-                          onPressed: _cargando ? null : _iniciarSesion,
-                          child: _cargando
-                              ? const CupertinoActivityIndicator(color: CupertinoColors.white)
-                              : const Text(
-                                  'Iniciar sesión',
-                                  style: TextStyle(fontWeight: FontWeight.w600),
-                                ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 28),
-                    _cuentaDemo(),
-                  ],
+                  ),
                 ),
               ),
             ),
-          ),
+          ],
         ),
       ),
     );
   }
+
+  Widget _circulo(double size, double alpha) => Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: AppColors.cyan.withValues(alpha: alpha),
+        ),
+      );
 
   Widget _encabezado() {
     return Column(
@@ -202,23 +265,29 @@ class _LoginScreenState extends State<LoginScreen> {
           height: 88,
           decoration: BoxDecoration(
             gradient: AppColors.brandGradient,
-            borderRadius: BorderRadius.circular(22),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+                color: CupertinoColors.white.withValues(alpha: 0.35),
+                width: 1.5),
             boxShadow: [
               BoxShadow(
-                color: AppColors.primary.withValues(alpha: 0.35),
-                blurRadius: 24,
+                color: AppColors.cyan.withValues(alpha: 0.4),
+                blurRadius: 28,
                 offset: const Offset(0, 10),
               ),
             ],
           ),
-          child: const Icon(CupertinoIcons.bag_fill, color: CupertinoColors.white, size: 44),
+          child: const Icon(CupertinoIcons.bag_fill,
+              color: CupertinoColors.white, size: 44),
         ),
         const SizedBox(height: 18),
-        const Text('TechStore', style: AppText.largeTitle),
+        const Text('TechStore', style: AppText.navLarge),
         const SizedBox(height: 6),
-        const Text(
+        Text(
           'Inicia sesión para gestionar tu inventario',
-          style: TextStyle(fontSize: 15, color: AppColors.secondaryLabel),
+          style: TextStyle(
+              fontSize: 15,
+              color: CupertinoColors.white.withValues(alpha: 0.75)),
         ),
       ],
     );
@@ -228,17 +297,20 @@ class _LoginScreenState extends State<LoginScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
-        color: AppColors.primary.withValues(alpha: 0.08),
+        color: CupertinoColors.white.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
+        border:
+            Border.all(color: CupertinoColors.white.withValues(alpha: 0.15)),
       ),
       child: const Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(CupertinoIcons.info_circle_fill, size: 16, color: AppColors.primary),
+          Icon(CupertinoIcons.info_circle_fill,
+              size: 16, color: Color(0xFF67E8F9)),
           SizedBox(width: 6),
           Text(
             'Demo: ${AppData.demoEmail} · ${AppData.demoPassword}',
-            style: TextStyle(fontSize: 12, color: AppColors.primary),
+            style: TextStyle(fontSize: 12, color: CupertinoColors.white),
           ),
         ],
       ),
@@ -258,7 +330,8 @@ class _Prefijo extends StatelessWidget {
       width: 28,
       height: 28,
       margin: const EdgeInsets.only(right: 6),
-      decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(7)),
+      decoration:
+          BoxDecoration(color: color, borderRadius: BorderRadius.circular(7)),
       child: Icon(icon, size: 16, color: CupertinoColors.white),
     );
   }

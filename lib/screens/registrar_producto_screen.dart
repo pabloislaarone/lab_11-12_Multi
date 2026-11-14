@@ -8,6 +8,7 @@ import '../data/app_data.dart';
 import '../models/producto.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_toast.dart';
+import '../widgets/gradient_header.dart';
 import '../widgets/producto_imagen.dart';
 import '../widgets/producto_tile.dart';
 import '../widgets/section_header.dart';
@@ -19,7 +20,8 @@ class RegistrarProductoScreen extends StatefulWidget {
   const RegistrarProductoScreen({super.key, this.productoEditar});
 
   @override
-  State<RegistrarProductoScreen> createState() => _RegistrarProductoScreenState();
+  State<RegistrarProductoScreen> createState() =>
+      _RegistrarProductoScreenState();
 }
 
 class _RegistrarProductoScreenState extends State<RegistrarProductoScreen> {
@@ -42,12 +44,19 @@ class _RegistrarProductoScreenState extends State<RegistrarProductoScreen> {
     _nombreCtrl = TextEditingController(text: p?.nombre ?? '');
     _marcaCtrl = TextEditingController(text: p?.marca ?? '');
     _descCtrl = TextEditingController(text: p?.descripcion ?? '');
-    _precioCtrl = TextEditingController(text: p == null ? '' : p.precio.toStringAsFixed(2));
+    _precioCtrl = TextEditingController(
+        text: p == null ? '' : p.precio.toStringAsFixed(2));
     _stockCtrl = TextEditingController(text: p == null ? '1' : '${p.stock}');
     _categoria = p?.categoria ?? 'Laptops';
     _imagenUrl = p?.imagenUrl;
 
-    for (final c in [_nombreCtrl, _marcaCtrl, _descCtrl, _precioCtrl, _stockCtrl]) {
+    for (final c in [
+      _nombreCtrl,
+      _marcaCtrl,
+      _descCtrl,
+      _precioCtrl,
+      _stockCtrl
+    ]) {
       c.addListener(_marcarModificado);
     }
   }
@@ -76,7 +85,9 @@ class _RegistrarProductoScreenState extends State<RegistrarProductoScreen> {
   Producto _productoActual() {
     return Producto(
       id: widget.productoEditar?.id ?? AppData.nuevoId(),
-      nombre: _nombreCtrl.text.trim().isEmpty ? 'Nombre del producto' : _nombreCtrl.text.trim(),
+      nombre: _nombreCtrl.text.trim().isEmpty
+          ? 'Nombre del producto'
+          : _nombreCtrl.text.trim(),
       marca: _marcaCtrl.text.trim(),
       descripcion: _descCtrl.text.trim(),
       precio: double.tryParse(_precioCtrl.text) ?? 0,
@@ -268,7 +279,8 @@ class _RegistrarProductoScreenState extends State<RegistrarProductoScreen> {
                       });
                       Navigator.pop(ctx);
                     },
-                    child: const Text('Listo', style: TextStyle(fontWeight: FontWeight.w600)),
+                    child: const Text('Listo',
+                        style: TextStyle(fontWeight: FontWeight.w600)),
                   ),
                 ],
               ),
@@ -276,14 +288,16 @@ class _RegistrarProductoScreenState extends State<RegistrarProductoScreen> {
               Expanded(
                 child: CupertinoPicker(
                   itemExtent: 40,
-                  scrollController: FixedExtentScrollController(initialItem: indice),
+                  scrollController:
+                      FixedExtentScrollController(initialItem: indice),
                   onSelectedItemChanged: (i) => indice = i,
                   children: [
                     for (final c in categorias)
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(AppData.iconoDe(c), size: 20, color: AppColors.categoria(c)),
+                          Icon(AppData.iconoDe(c),
+                              size: 20, color: AppColors.categoria(c)),
                           const SizedBox(width: 10),
                           Text(c),
                         ],
@@ -304,17 +318,12 @@ class _RegistrarProductoScreenState extends State<RegistrarProductoScreen> {
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
       navigationBar: CupertinoNavigationBar(
-        leading: CupertinoButton(
-          padding: EdgeInsets.zero,
-          onPressed: _cancelar,
-          child: const Text('Cancelar'),
-        ),
+        border: null,
+        automaticBackgroundVisibility: false,
+        brightness: Brightness.dark,
+        leading: NavTextButton('Cancelar', onPressed: _cancelar),
         middle: Text(_editando ? 'Editar producto' : 'Nuevo producto'),
-        trailing: CupertinoButton(
-          padding: EdgeInsets.zero,
-          onPressed: _guardar,
-          child: const Text('Guardar', style: TextStyle(fontWeight: FontWeight.w600)),
-        ),
+        trailing: NavTextButton('Guardar', onPressed: _guardar, negrita: true),
       ),
       child: SafeArea(
         child: GestureDetector(
@@ -327,6 +336,7 @@ class _RegistrarProductoScreenState extends State<RegistrarProductoScreen> {
                 _selectorFoto(),
 
                 CupertinoFormSection.insetGrouped(
+                  backgroundColor: AppColors.background,
                   header: const SectionHeader('Información'),
                   children: [
                     CupertinoTextFormFieldRow(
@@ -335,7 +345,8 @@ class _RegistrarProductoScreenState extends State<RegistrarProductoScreen> {
                       placeholder: 'Ej. MacBook Air 13"',
                       textInputAction: TextInputAction.next,
                       validator: (v) {
-                        if (v == null || v.trim().isEmpty) return 'El nombre es obligatorio';
+                        if (v == null || v.trim().isEmpty)
+                          return 'El nombre es obligatorio';
                         if (v.trim().length < 3) return 'Mínimo 3 caracteres';
                         return null;
                       },
@@ -360,7 +371,8 @@ class _RegistrarProductoScreenState extends State<RegistrarProductoScreen> {
                               color: AppColors.categoria(_categoria),
                             ),
                             const SizedBox(width: 6),
-                            Text(_categoria, style: const TextStyle(color: AppColors.label)),
+                            Text(_categoria,
+                                style: const TextStyle(color: AppColors.label)),
                             const SizedBox(width: 4),
                             const Icon(
                               CupertinoIcons.chevron_up_chevron_down,
@@ -383,6 +395,7 @@ class _RegistrarProductoScreenState extends State<RegistrarProductoScreen> {
                 ),
 
                 CupertinoFormSection.insetGrouped(
+                  backgroundColor: AppColors.background,
                   header: const SectionHeader('Precio y stock'),
                   footer: const Text('El precio se registra en soles (S/).'),
                   children: [
@@ -390,9 +403,11 @@ class _RegistrarProductoScreenState extends State<RegistrarProductoScreen> {
                       controller: _precioCtrl,
                       prefix: const _Etiqueta('Precio'),
                       placeholder: '0.00',
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      keyboardType:
+                          const TextInputType.numberWithOptions(decimal: true),
                       inputFormatters: [
-                        FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
+                        FilteringTextInputFormatter.allow(
+                            RegExp(r'^\d*\.?\d{0,2}')),
                       ],
                       validator: (v) {
                         final precio = double.tryParse(v ?? '');
@@ -406,7 +421,9 @@ class _RegistrarProductoScreenState extends State<RegistrarProductoScreen> {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          _BotonPaso(icon: CupertinoIcons.minus, onTap: () => _cambiarStock(-1)),
+                          _BotonPaso(
+                              icon: CupertinoIcons.minus,
+                              onTap: () => _cambiarStock(-1)),
                           SizedBox(
                             width: 64,
                             child: CupertinoTextField.borderless(
@@ -420,7 +437,9 @@ class _RegistrarProductoScreenState extends State<RegistrarProductoScreen> {
                               style: AppText.headline,
                             ),
                           ),
-                          _BotonPaso(icon: CupertinoIcons.plus, onTap: () => _cambiarStock(1)),
+                          _BotonPaso(
+                              icon: CupertinoIcons.plus,
+                              onTap: () => _cambiarStock(1)),
                         ],
                       ),
                     ),
@@ -429,8 +448,8 @@ class _RegistrarProductoScreenState extends State<RegistrarProductoScreen> {
 
                 // Vista previa: se actualiza mientras escribes
                 CupertinoListSection.insetGrouped(
-                  header: const SectionHeader('Vista previa'),
                   backgroundColor: AppColors.background,
+                  header: const SectionHeader('Vista previa'),
                   decoration: const BoxDecoration(),
                   children: [
                     ListenableBuilder(
@@ -472,8 +491,8 @@ class _RegistrarProductoScreenState extends State<RegistrarProductoScreen> {
   Widget _selectorFoto() {
     final tieneFoto = _imagenUrl != null && _imagenUrl!.isNotEmpty;
 
-    return Padding(
-      padding: const EdgeInsets.only(top: 20),
+    return GradientHeader(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 14),
       child: Column(
         children: [
           CupertinoButton(
@@ -519,9 +538,10 @@ class _RegistrarProductoScreenState extends State<RegistrarProductoScreen> {
                     width: 36,
                     height: 36,
                     decoration: BoxDecoration(
-                      color: AppColors.primary,
                       shape: BoxShape.circle,
-                      border: Border.all(color: AppColors.background, width: 3),
+                      gradient: AppColors.brandGradient,
+                      border:
+                          Border.all(color: CupertinoColors.white, width: 3),
                     ),
                     child: Icon(
                       tieneFoto ? CupertinoIcons.pencil : CupertinoIcons.plus,
@@ -539,7 +559,11 @@ class _RegistrarProductoScreenState extends State<RegistrarProductoScreen> {
             onPressed: _opcionesFoto,
             child: Text(
               tieneFoto ? 'Cambiar foto' : 'Agregar foto',
-              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w500,
+                color: Color(0xFF67E8F9),
+              ),
             ),
           ),
         ],
@@ -557,7 +581,8 @@ class _Etiqueta extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: 100,
-      child: Text(texto, style: const TextStyle(fontSize: 16, color: AppColors.label)),
+      child: Text(texto,
+          style: const TextStyle(fontSize: 16, color: AppColors.label)),
     );
   }
 }
@@ -601,13 +626,17 @@ class _GaleriaSheetState extends State<_GaleriaSheet> {
   @override
   void initState() {
     super.initState();
-    final hayFotos = AppData.galeria.any((f) => f.categoria == widget.categoriaActual);
+    final hayFotos =
+        AppData.galeria.any((f) => f.categoria == widget.categoriaActual);
     _filtro = hayFotos ? widget.categoriaActual : 'Todas';
   }
 
   @override
   Widget build(BuildContext context) {
-    final cats = ['Todas', ...{for (final f in AppData.galeria) f.categoria}];
+    final cats = [
+      'Todas',
+      ...{for (final f in AppData.galeria) f.categoria}
+    ];
     final fotos = AppData.galeria
         .where((f) => _filtro == 'Todas' || f.categoria == _filtro)
         .toList();
@@ -648,7 +677,8 @@ class _GaleriaSheetState extends State<_GaleriaSheet> {
               height: 44,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                 itemCount: cats.length,
                 separatorBuilder: (_, __) => const SizedBox(width: 8),
                 itemBuilder: (_, i) {
@@ -668,7 +698,8 @@ class _GaleriaSheetState extends State<_GaleriaSheet> {
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: activa ? CupertinoColors.white : AppColors.label,
+                          color:
+                              activa ? CupertinoColors.white : AppColors.label,
                         ),
                       ),
                     ),
@@ -708,7 +739,9 @@ class _GaleriaSheetState extends State<_GaleriaSheet> {
                                 url: foto.url,
                                 iconoRespaldo: AppData.iconoDe(foto.categoria),
                                 categoria: foto.categoria,
-                                size: c.maxWidth < c.maxHeight ? c.maxWidth : c.maxHeight,
+                                size: c.maxWidth < c.maxHeight
+                                    ? c.maxWidth
+                                    : c.maxHeight,
                                 radius: 10,
                               ),
                             ),
@@ -718,7 +751,8 @@ class _GaleriaSheetState extends State<_GaleriaSheet> {
                             foto.nombre,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+                            style: const TextStyle(
+                                fontSize: 12, fontWeight: FontWeight.w500),
                           ),
                         ],
                       ),

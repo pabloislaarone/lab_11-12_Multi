@@ -87,7 +87,8 @@ class _ToastState extends State<_Toast> {
             duration: const Duration(milliseconds: 250),
             child: Center(
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(
                   color: AppColors.label.withValues(alpha: 0.92),
                   borderRadius: BorderRadius.circular(30),

@@ -32,6 +32,8 @@ class _HomeScreenState extends State<HomeScreen> {
       controller: _tabs,
       tabBar: CupertinoTabBar(
         activeColor: AppColors.primary,
+        inactiveColor: AppColors.tertiaryLabel,
+        backgroundColor: const Color(0xF2FFFFFF),
         iconSize: 26,
         items: const [
           BottomNavigationBarItem(

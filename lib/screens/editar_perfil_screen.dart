@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import '../data/app_data.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_toast.dart';
+import '../widgets/gradient_header.dart';
 import '../widgets/section_header.dart';
 
 class EditarPerfilScreen extends StatefulWidget {
@@ -60,17 +61,13 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
       navigationBar: CupertinoNavigationBar(
-        leading: CupertinoButton(
-          padding: EdgeInsets.zero,
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Cancelar'),
-        ),
+        border: null,
+        automaticBackgroundVisibility: false,
+        brightness: Brightness.dark,
+        leading:
+            NavTextButton('Cancelar', onPressed: () => Navigator.pop(context)),
         middle: const Text('Editar perfil'),
-        trailing: CupertinoButton(
-          padding: EdgeInsets.zero,
-          onPressed: _guardar,
-          child: const Text('Listo', style: TextStyle(fontWeight: FontWeight.w600)),
-        ),
+        trailing: NavTextButton('Listo', onPressed: _guardar, negrita: true),
       ),
       child: SafeArea(
         child: Form(
@@ -78,6 +75,7 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
           child: ListView(
             children: [
               CupertinoFormSection.insetGrouped(
+                backgroundColor: AppColors.background,
                 header: const SectionHeader('Datos personales'),
                 children: [
                   CupertinoTextFormFieldRow(
@@ -85,8 +83,9 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
                     prefix: const _EtiquetaPerfil('Nombre'),
                     placeholder: 'Nombre y apellido',
                     textCapitalization: TextCapitalization.words,
-                    validator: (v) =>
-                        (v == null || v.trim().length < 3) ? 'Ingresa tu nombre completo' : null,
+                    validator: (v) => (v == null || v.trim().length < 3)
+                        ? 'Ingresa tu nombre completo'
+                        : null,
                   ),
                   CupertinoTextFormFieldRow(
                     controller: _emailCtrl,
@@ -96,7 +95,9 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
                     autocorrect: false,
                     validator: (v) {
                       final regex = RegExp(r'^[\w.\-]+@[\w\-]+\.[\w.]+$');
-                      return regex.hasMatch(v?.trim() ?? '') ? null : 'El email no es válido';
+                      return regex.hasMatch(v?.trim() ?? '')
+                          ? null
+                          : 'El email no es válido';
                     },
                   ),
                   CupertinoTextFormFieldRow(
@@ -108,13 +109,17 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
                       FilteringTextInputFormatter.digitsOnly,
                       LengthLimitingTextInputFormatter(9),
                     ],
-                    validator: (v) => (v == null || v.length != 9) ? 'Debe tener 9 dígitos' : null,
+                    validator: (v) => (v == null || v.length != 9)
+                        ? 'Debe tener 9 dígitos'
+                        : null,
                   ),
                 ],
               ),
               CupertinoFormSection.insetGrouped(
+                backgroundColor: AppColors.background,
                 header: const SectionHeader('Rol'),
-                footer: const Text('El rol define qué acciones puede realizar en el inventario.'),
+                footer: const Text(
+                    'El rol define qué acciones puede realizar en el inventario.'),
                 children: [
                   Padding(
                     padding: const EdgeInsets.all(12),
@@ -145,7 +150,8 @@ class _EtiquetaPerfil extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: 90,
-      child: Text(texto, style: const TextStyle(fontSize: 16, color: AppColors.label)),
+      child: Text(texto,
+          style: const TextStyle(fontSize: 16, color: AppColors.label)),
     );
   }
 }

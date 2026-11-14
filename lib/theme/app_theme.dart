@@ -1,65 +1,92 @@
 // Colores, estilos de texto y tema Cupertino de toda la app.
-// Se usa la paleta del sistema de iOS para que la app se sienta nativa.
+// Paleta fría: azul marino, azul, cian y turquesa.
 import 'package:flutter/cupertino.dart';
 
 class AppColors {
   AppColors._();
 
-  // Color de marca (índigo de iOS)
-  static const Color primary = Color(0xFF5856D6);
-  static const Color primaryDark = Color(0xFF3634A3);
+  // Marca
+  static const Color navy = Color(0xFF0B1E3A);
+  static const Color navyLight = Color(0xFF173F73);
+  static const Color primary = Color(0xFF2563EB); // azul
+  static const Color cyan = Color(0xFF06B6D4);
+  static const Color teal = Color(0xFF0D9488);
+  static const Color sky = Color(0xFF0EA5E9);
+  static const Color indigo = Color(0xFF4F46E5);
+  static const Color violet = Color(0xFF7C3AED);
+  static const Color slate = Color(0xFF64748B);
 
-  // Fondos estilo "Ajustes" de iOS
-  static const Color background = Color(0xFFF2F2F7); // systemGroupedBackground
+  // Fondos
+  static const Color background = Color(0xFFEAF0F7);
   static const Color card = Color(0xFFFFFFFF);
-  static const Color fill = Color(0xFFEFEFF4);
-  static const Color separator = Color(0xFFE5E5EA);
+  static const Color fill = Color(0xFFE3ECF6);
+  static const Color separator = Color(0xFFD9E2EE);
 
   // Texto
-  static const Color label = Color(0xFF1C1C1E);
-  static const Color secondaryLabel = Color(0xFF6E6E73);
-  static const Color tertiaryLabel = Color(0xFFAEAEB2);
+  static const Color label = Color(0xFF0F172A);
+  static const Color secondaryLabel = Color(0xFF5B6B80);
+  static const Color tertiaryLabel = Color(0xFF9AA8BA);
 
   // Estados
-  static const Color success = Color(0xFF34C759);
-  static const Color warning = Color(0xFFFF9500);
-  static const Color danger = Color(0xFFFF3B30);
-  static const Color blue = Color(0xFF007AFF);
-  static const Color teal = Color(0xFF30B0C7);
-  static const Color pink = Color(0xFFFF2D55);
-  static const Color grey = Color(0xFF8E8E93);
+  static const Color success = Color(0xFF10B981);
+  static const Color warning = Color(0xFFF59E0B);
+  static const Color danger = Color(0xFFEF4444);
 
-  /// Tarjeta oscura del resumen del inventario
-  static const LinearGradient heroGradient = LinearGradient(
-    colors: [Color(0xFF1C1C2E), Color(0xFF34336B)],
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
+  /// Encabezados de cada pantalla
+  static const LinearGradient headerGradient = LinearGradient(
+    colors: [navy, navyLight, Color(0xFF0E6A86)],
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
   );
 
-  /// Ícono de la app en el login
+  /// Ícono de la app, avatar y botones principales
   static const LinearGradient brandGradient = LinearGradient(
-    colors: [Color(0xFF7D7AFF), Color(0xFF5856D6)],
+    colors: [cyan, primary],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
-  /// Color de cada categoría (para íconos y etiquetas)
+  /// Degradados de los accesos rápidos del menú
+  static const List<LinearGradient> accesos = [
+    LinearGradient(
+      colors: [Color(0xFF3B82F6), Color(0xFF1D4ED8)],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    ),
+    LinearGradient(
+      colors: [Color(0xFF22D3EE), Color(0xFF0891B2)],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    ),
+    LinearGradient(
+      colors: [Color(0xFF2DD4BF), Color(0xFF0F766E)],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    ),
+    LinearGradient(
+      colors: [Color(0xFF475569), Color(0xFF1E293B)],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    ),
+  ];
+
+  /// Color de cada categoría (íconos y etiquetas)
   static Color categoria(String categoria) {
     switch (categoria) {
       case 'Laptops':
-        return primary;
+        return indigo;
       case 'Celulares':
-        return blue;
+        return primary;
       case 'Tablets':
-        return teal;
+        return const Color(0xFF0891B2);
       case 'Audio':
-        return pink;
+        return violet;
       case 'Wearables':
-        return warning;
+        return teal;
       case 'Accesorios':
-        return success;
+        return sky;
       default:
-        return grey;
+        return slate;
     }
   }
 
@@ -72,7 +99,7 @@ class AppColors {
 
   static List<BoxShadow> get softShadow => [
         BoxShadow(
-          color: const Color(0xFF000000).withValues(alpha: 0.05),
+          color: navy.withValues(alpha: 0.07),
           blurRadius: 18,
           offset: const Offset(0, 6),
         ),
@@ -126,6 +153,20 @@ class AppText {
     letterSpacing: -0.1,
     color: AppColors.label,
   );
+
+  /// Textos blancos sobre los encabezados oscuros
+  static const TextStyle navLarge = TextStyle(
+    fontSize: 32,
+    fontWeight: FontWeight.w700,
+    letterSpacing: -0.2,
+    color: CupertinoColors.white,
+  );
+
+  static const TextStyle navTitle = TextStyle(
+    fontSize: 17,
+    fontWeight: FontWeight.w600,
+    color: CupertinoColors.white,
+  );
 }
 
 class AppTheme {
@@ -135,11 +176,12 @@ class AppTheme {
     brightness: Brightness.light,
     primaryColor: AppColors.primary,
     scaffoldBackgroundColor: AppColors.background,
-    barBackgroundColor: Color(0xF0F9F9F9),
+    barBackgroundColor: AppColors.navy,
     textTheme: CupertinoTextThemeData(
       primaryColor: AppColors.primary,
       textStyle: AppText.body,
-      navLargeTitleTextStyle: AppText.largeTitle,
+      navLargeTitleTextStyle: AppText.navLarge,
+      navTitleTextStyle: AppText.navTitle,
     ),
   );
 }
